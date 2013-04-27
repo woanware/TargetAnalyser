@@ -3,6 +3,7 @@ v0.0.3
 ------
 - Added status updates
 - Added HpHosts
+- Added Hurricane Electric
 
 v0.0.2
 ------
