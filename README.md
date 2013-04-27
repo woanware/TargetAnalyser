@@ -26,6 +26,7 @@ The issue for me is that sometimes I want to look at the page that produced the 
 
 ## Third party libraries ##
 
+- [DNS](http://www.codeproject.com/Articles/23673/DNS-NET-Resolver-C): DNS lookups
 - [ObjectListView](http://objectlistview.sourceforge.net/cs/index.html) : Data viewing via lists 
 - [VirusTotal.NET](https://github.com/woanware/VirusTotal.NET): Fork from https://github.com/Genbox/VirusTotal.NET
 - [Utility](http://www.woanware.co.uk): Misc functions (woanware)
