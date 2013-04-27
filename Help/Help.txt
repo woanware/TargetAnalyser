@@ -1,0 +1,19 @@
+
+v0.0.3
+------
+- Added status updates
+- Added HpHosts
+
+v0.0.2
+------
+- Added threadexpert MD5 lookup
+- Added VxVault MD5 lookup
+- Added MinotaurAnalysis MD5 lookup
+- Added VirusTotal MD5 lookup
+- Added BKN passive DNS lookup
+- Added VirusTotal passive DNS lookup
+- Added retry capability
+
+v0.0.1
+------
+- Initial release
