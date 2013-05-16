@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using System.Linq;
 using woanware;
 
 namespace TargetAnalyser
@@ -15,6 +16,7 @@ namespace TargetAnalyser
         #endregion
 
         #region Member Variables
+        private Settings _settings;
         private Analyser _analyser;
         private HourGlass _hourGlass;
         private int _retries = 3;
@@ -136,13 +138,13 @@ namespace TargetAnalyser
             switch (cboTargetType.SelectedIndex)
             {
                 case 0:
-                    _analyser.Analyse(Global.TargetType.Ip, txtTarget.Text);
+                    _analyser.Analyse(_settings.Sources, Global.TargetType.Ip, txtTarget.Text);
                     break;
                 case 1:
-                    _analyser.Analyse(Global.TargetType.Url, txtTarget.Text);
+                    _analyser.Analyse(_settings.Sources, Global.TargetType.Url, txtTarget.Text);
                     break;
                 case 2:
-                    _analyser.Analyse(Global.TargetType.Md5, txtTarget.Text);
+                    _analyser.Analyse(_settings.Sources, Global.TargetType.Md5, txtTarget.Text);
                     break;
             }
         }
@@ -156,7 +158,52 @@ namespace TargetAnalyser
         /// <param name="e"></param>
         private void FormMain_Load(object sender, EventArgs e)
         {
+            _settings = new Settings();
+            if (_settings.FileExists == true)
+            {
+                string ret = _settings.Load();
+                if (ret.Length > 0)
+                {
+                    UserInterface.DisplayErrorMessageBox(this, ret);
+                }
+                else
+                {
+                    this.WindowState = _settings.FormState;
+
+                    if (_settings.FormState != FormWindowState.Maximized)
+                    {
+                        this.Location = _settings.FormLocation;
+                        this.Size = _settings.FormSize;
+                    }
+                }
+            }
+            else
+            {
+                // Add all providers initially
+                foreach (Global.Source source in Misc.EnumToList<Global.Source>())
+                {
+                    _settings.Sources = _settings.Sources.Include(source);
+                }
+            }
+
             cboTargetType.SelectedIndex = 0;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            _settings.FormLocation = base.Location;
+            _settings.FormSize = base.Size;
+            _settings.FormState = base.WindowState;
+            string ret = _settings.Save();
+            if (ret.Length > 0)
+            {
+                UserInterface.DisplayErrorMessageBox(this, ret);
+            }
         }
 
         /// <summary>
@@ -214,6 +261,105 @@ namespace TargetAnalyser
 
             Result result = (Result)listResults.SelectedObject;
             Misc.ShellExecuteFile(result.ParentUrl);
+        }
+        #endregion
+
+        #region Menu Event Handlers
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void menuToolsProviders_Click(object sender, EventArgs e)
+        {
+            using (FormProviders form = new FormProviders(_settings.Sources))
+            {
+                if (form.ShowDialog(this) == DialogResult.Cancel)
+                {
+                    return;
+                }
+
+                _settings.Sources = form.Sources;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void menuFileExit_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void menuHelpAbout_Click(object sender, EventArgs e)
+        {
+            using (FormAbout form = new FormAbout())
+            {
+                form.ShowDialog(this);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void menuFileExportJson_Click(object sender, EventArgs e)
+        {
+            using (new HourGlass(this))
+            {
+                SaveFileDialog saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Title = "Select the export JSON file";
+                saveFileDialog.Filter = "JSON Files|*.json";
+                if (saveFileDialog.ShowDialog(this) == DialogResult.Cancel)
+                {
+                    return;
+
+                }
+
+                List<Result> results = listResults.Objects.Cast<Result>().ToList();
+                string ret = Output.Process(results, Global.OutputMode.Json, saveFileDialog.FileName);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void menuFileExportCsv_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void menuFileExportXml_Click(object sender, EventArgs e)
+        {
+            using (new HourGlass(this))
+            {
+                SaveFileDialog saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Title = "Select the export XML file";
+                saveFileDialog.Filter = "XML Files|*.xml";
+                if (saveFileDialog.ShowDialog(this) == DialogResult.Cancel)
+                {
+                    return;
+
+                }
+
+                List<Result> results = listResults.Objects.Cast<Result>().ToList();
+                string ret = Output.Process(results, Global.OutputMode.Xml, saveFileDialog.FileName);
+            }
         }
         #endregion
     }

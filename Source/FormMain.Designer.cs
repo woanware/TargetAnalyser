@@ -32,7 +32,13 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.menuFile = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileExport = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileExportCsv = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileExportJson = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileExportXml = new System.Windows.Forms.ToolStripMenuItem();
             this.menuFileExit = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuTools = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuToolsProviders = new System.Windows.Forms.ToolStripMenuItem();
             this.menuHelp = new System.Windows.Forms.ToolStripMenuItem();
             this.menuHelpAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip = new System.Windows.Forms.ToolStrip();
@@ -59,6 +65,7 @@
             // 
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuFile,
+            this.menuTools,
             this.menuHelp});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
@@ -70,16 +77,64 @@
             // menuFile
             // 
             this.menuFile.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuFileExport,
             this.menuFileExit});
             this.menuFile.Name = "menuFile";
             this.menuFile.Size = new System.Drawing.Size(37, 20);
             this.menuFile.Text = "File";
             // 
+            // menuFileExport
+            // 
+            this.menuFileExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuFileExportCsv,
+            this.menuFileExportJson,
+            this.menuFileExportXml});
+            this.menuFileExport.Name = "menuFileExport";
+            this.menuFileExport.Size = new System.Drawing.Size(107, 22);
+            this.menuFileExport.Text = "Export";
+            // 
+            // menuFileExportCsv
+            // 
+            this.menuFileExportCsv.Name = "menuFileExportCsv";
+            this.menuFileExportCsv.Size = new System.Drawing.Size(102, 22);
+            this.menuFileExportCsv.Text = "CSV";
+            this.menuFileExportCsv.Click += new System.EventHandler(this.menuFileExportCsv_Click);
+            // 
+            // menuFileExportJson
+            // 
+            this.menuFileExportJson.Name = "menuFileExportJson";
+            this.menuFileExportJson.Size = new System.Drawing.Size(102, 22);
+            this.menuFileExportJson.Text = "JSON";
+            this.menuFileExportJson.Click += new System.EventHandler(this.menuFileExportJson_Click);
+            // 
+            // menuFileExportXml
+            // 
+            this.menuFileExportXml.Name = "menuFileExportXml";
+            this.menuFileExportXml.Size = new System.Drawing.Size(102, 22);
+            this.menuFileExportXml.Text = "XML";
+            this.menuFileExportXml.Click += new System.EventHandler(this.menuFileExportXml_Click);
+            // 
             // menuFileExit
             // 
             this.menuFileExit.Name = "menuFileExit";
-            this.menuFileExit.Size = new System.Drawing.Size(92, 22);
+            this.menuFileExit.Size = new System.Drawing.Size(107, 22);
             this.menuFileExit.Text = "Exit";
+            this.menuFileExit.Click += new System.EventHandler(this.menuFileExit_Click);
+            // 
+            // menuTools
+            // 
+            this.menuTools.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuToolsProviders});
+            this.menuTools.Name = "menuTools";
+            this.menuTools.Size = new System.Drawing.Size(48, 20);
+            this.menuTools.Text = "Tools";
+            // 
+            // menuToolsProviders
+            // 
+            this.menuToolsProviders.Name = "menuToolsProviders";
+            this.menuToolsProviders.Size = new System.Drawing.Size(123, 22);
+            this.menuToolsProviders.Text = "Providers";
+            this.menuToolsProviders.Click += new System.EventHandler(this.menuToolsProviders_Click);
             // 
             // menuHelp
             // 
@@ -92,8 +147,9 @@
             // menuHelpAbout
             // 
             this.menuHelpAbout.Name = "menuHelpAbout";
-            this.menuHelpAbout.Size = new System.Drawing.Size(107, 22);
+            this.menuHelpAbout.Size = new System.Drawing.Size(152, 22);
             this.menuHelpAbout.Text = "About";
+            this.menuHelpAbout.Click += new System.EventHandler(this.menuHelpAbout_Click);
             // 
             // toolStrip
             // 
@@ -192,19 +248,19 @@
             this.contextShowParent});
             this.context.Name = "context";
             this.context.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.context.Size = new System.Drawing.Size(153, 70);
+            this.context.Size = new System.Drawing.Size(141, 48);
             // 
             // contextShow
             // 
             this.contextShow.Name = "contextShow";
-            this.contextShow.Size = new System.Drawing.Size(152, 22);
+            this.contextShow.Size = new System.Drawing.Size(140, 22);
             this.contextShow.Text = "Show";
             this.contextShow.Click += new System.EventHandler(this.contextShow_Click);
             // 
             // contextShowParent
             // 
             this.contextShowParent.Name = "contextShowParent";
-            this.contextShowParent.Size = new System.Drawing.Size(152, 22);
+            this.contextShowParent.Size = new System.Drawing.Size(140, 22);
             this.contextShowParent.Text = "Show Parent";
             this.contextShowParent.Click += new System.EventHandler(this.contextShowParent_Click);
             // 
@@ -224,6 +280,7 @@
             this.Name = "FormMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "TargetAnalyser";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
             this.Load += new System.EventHandler(this.FormMain_Load);
             this.Shown += new System.EventHandler(this.FormMain_Shown);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.FormMain_KeyDown);
@@ -260,6 +317,12 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem contextShow;
         private System.Windows.Forms.ToolStripMenuItem contextShowParent;
+        private System.Windows.Forms.ToolStripMenuItem menuTools;
+        private System.Windows.Forms.ToolStripMenuItem menuToolsProviders;
+        private System.Windows.Forms.ToolStripMenuItem menuFileExport;
+        private System.Windows.Forms.ToolStripMenuItem menuFileExportCsv;
+        private System.Windows.Forms.ToolStripMenuItem menuFileExportJson;
+        private System.Windows.Forms.ToolStripMenuItem menuFileExportXml;
     }
 }
 

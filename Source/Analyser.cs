@@ -22,6 +22,7 @@ namespace TargetAnalyser
         public event ResultEvent ResultsIdentified;
         public event woanware.Events.DefaultEvent Complete;
 
+        private Global.Source _sources;
         private string _apiKey;
         private int _retries;
 
@@ -39,9 +40,15 @@ namespace TargetAnalyser
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="sources"></param>
+        /// <param name="targetType"></param>
         /// <param name="data"></param>
-        public void Analyse(Global.TargetType targetType, string data)
+        public void Analyse(Global.Source sources, 
+                            Global.TargetType targetType, 
+                            string data)
         {
+            _sources = sources;
+
             (new Thread(() =>
             {
                 switch (targetType)
@@ -52,7 +59,7 @@ namespace TargetAnalyser
                         RunRobTex(data);
                         RunAlienVault(data);
                         RunFortiguard(data);
-                        RunMalwareDomain(data);
+                        RunMalwareDomainList(data);
                         RunBfk(data);
                         RunVirusTotalDns(data);
                         RunHurricaneElectric(data);
@@ -64,7 +71,7 @@ namespace TargetAnalyser
                         RunRobTex(data);
                         RunAlienVault(data);
                         RunFortiguard(data);
-                        RunMalwareDomain(data);
+                        RunMalwareDomainList(data);
                         RunBfk(data);
                         RunVirusTotalDns(data);
                         RunHpHosts(data);
@@ -89,16 +96,23 @@ namespace TargetAnalyser
         /// <param name="data"></param>
         private void RunIpVoid(string data)
         {
+            string url = "http://ipvoid.com/scan/" + data;
+
             try
             {
+                if (_sources.Has(Global.Source.IpVoid) == false)
+                {
+                    return;
+                }
+
                 OnMessage("Analysing via " + Global.Source.IpVoid.GetEnumDescription());
 
                 GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download("http://ipvoid.com/scan/" + data, _retries);
+                WebClientResult wcr = wc.Download(url, _retries);
                 if (wcr.IsError == true)
                 {
                     SendDefaultResult(Global.Source.IpVoid,
-                                      "http://ipvoid.com/scan/" + data,
+                                      url,
                                       "Error: " + wcr.Response);
                     return;
                 }
@@ -115,7 +129,7 @@ namespace TargetAnalyser
                         Result result = new Result();
                         result.Source = Global.Source.IpVoid;
                         result.Info = "Blacklisted: " + match.Groups[1].Value;
-                        result.ParentUrl = "http://ipvoid.com/scan/" + data;
+                        result.ParentUrl = url;
                         result.Url = match.Groups[1].Value;
 
                         results.Add(result);
@@ -128,7 +142,7 @@ namespace TargetAnalyser
                     else
                     {
                         SendDefaultResult(Global.Source.IpVoid,
-                                          "http://ipvoid.com/scan/" + data,
+                                          url,
                                           "No record");
                     }
                 }
@@ -150,7 +164,7 @@ namespace TargetAnalyser
                         Result result = new Result();
                         result.Source = Global.Source.IpVoid;
                         result.Info = "Blacklisted: " + match.Groups[1].Value;
-                        result.ParentUrl = "http://ipvoid.com/scan/" + data;
+                        result.ParentUrl = url;
                         result.Url = match.Groups[1].Value;
 
                         results.Add(result);
@@ -163,15 +177,15 @@ namespace TargetAnalyser
                     else
                     {
                         SendDefaultResult(Global.Source.IpVoid,
-                                          "http://ipvoid.com/scan/" + data,
+                                          url,
                                           "No record");
                     }
                 }
             }
             catch (Exception ex) 
             {
-                SendDefaultResult(Global.Source.UrlVoid,
-                                  "http://ipvoid.com/scan/" + data,
+                SendDefaultResult(Global.Source.IpVoid,
+                                  url,
                                   "Error");
             }
         }
@@ -182,16 +196,23 @@ namespace TargetAnalyser
         /// <param name="data"></param>
         private void RunUrlVoid(string data)
         {
+            string url = "http://urlvoid.com/scan/" + data;
+
             try
             {
+                if (_sources.Has(Global.Source.UrlVoid) == false)
+                {
+                    return;
+                }
+
                 OnMessage("Analysing via " + Global.Source.UrlVoid.GetEnumDescription());
 
                 GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download("http://urlvoid.com/scan/" + data, _retries);
+                WebClientResult wcr = wc.Download(url, _retries);
                 if (wcr.IsError == true)
                 {
                     SendDefaultResult(Global.Source.UrlVoid,
-                                      "http://urlvoid.com/scan/" + data,
+                                      url,
                                       "Error: " + wcr.Response);
                     return;
                 }
@@ -214,7 +235,7 @@ namespace TargetAnalyser
                         Result result = new Result();
                         result.Source = Global.Source.UrlVoid;
                         result.Info = "Blacklisted: " + match.Groups[1].Value;
-                        result.ParentUrl = "http://urlvoid.com/scan/" + data;
+                        result.ParentUrl = url;
                         result.Url = match.Groups[1].Value;
 
                         results.Add(result);
@@ -227,7 +248,7 @@ namespace TargetAnalyser
                     else
                     {
                         SendDefaultResult(Global.Source.UrlVoid,
-                                          "http://urlvoid.com/scan/" + data,
+                                          url,
                                           "No record");
                     }
                 }
@@ -249,7 +270,7 @@ namespace TargetAnalyser
                         Result result = new Result();
                         result.Source = Global.Source.UrlVoid;
                         result.Info = "Blacklisted: " + match.Groups[1].Value;
-                        result.ParentUrl = "http://urlvoid.com/scan/" + data;
+                        result.ParentUrl = url;
                         result.Url = match.Groups[1].Value;
 
                         results.Add(result);
@@ -262,7 +283,7 @@ namespace TargetAnalyser
                     else
                     {
                         SendDefaultResult(Global.Source.UrlVoid,
-                                      "http://urlvoid.com/scan/" + data,
+                                      url,
                                       "No record");
                     }
                 }    
@@ -270,7 +291,7 @@ namespace TargetAnalyser
             catch (Exception ex) 
             {
                 SendDefaultResult(Global.Source.UrlVoid,
-                                  "http://urlvoid.com/scan/" + data,
+                                  url,
                                   "Error");
             }
         }
@@ -283,6 +304,11 @@ namespace TargetAnalyser
         {
             try
             {
+                //if (_sources.Has(Global.Source.D) == false)
+                //{
+                //    return;
+                //}
+
                // OnMessage("Analysing via " + Global.Source.Dn.GetEnumDescription());
 
                 Resolver resolver = new Resolver("8.8.8.8");
@@ -301,24 +327,31 @@ namespace TargetAnalyser
         /// <param name="data"></param>
         private void RunRobTex(string data)
         {
+            string url = "http://robtex.com/" + data + ".html";
+
             try
             {
+                if (_sources.Has(Global.Source.Robtex) == false)
+                {
+                    return;
+                }
+
                 OnMessage("Analysing via " + Global.Source.Robtex.GetEnumDescription());
 
                 GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download("http://robtex.com/" + data + ".html", _retries);
+                WebClientResult wcr = wc.Download(url, _retries);
                 if (wcr.IsError == true)
                 {
                     if (wcr.Response == HttpStatusCode.NotFound.ToString())
                     {
                         SendDefaultResult(Global.Source.Robtex,
-                                          "http://robtex.com/" + data + ".html",
+                                          url,
                                           "No record");
                     }
                     else
                     {
                         SendDefaultResult(Global.Source.Robtex,
-                                          "http://robtex.com/" + data + ".html",
+                                          url,
                                           "Error: " + wcr.Response);
 
                     }
@@ -335,7 +368,7 @@ namespace TargetAnalyser
                     Result result = new Result();
                     result.Source = Global.Source.Robtex;
                     result.Info = "A Record: " + match.Groups[1].Value;
-                    result.ParentUrl = "http://robtex.com/" + data + ".html";
+                    result.ParentUrl = url;
                     result.Url = "http://robtex.com/" + match.Groups[1].Value + ".html";
 
                     results.Add(result);
@@ -348,34 +381,41 @@ namespace TargetAnalyser
                 else
                 {
                     SendDefaultResult(Global.Source.Robtex,
-                                      "http://robtex.com/" + data + ".html",
+                                      url,
                                       "No A records");
                 }
             }
             catch (Exception ex)
             {
                 SendDefaultResult(Global.Source.Robtex,
-                                  "http://robtex.com/" + data + ".html",
+                                  url,
                                   "Error");
             }
         }
 
         /// <summary>
-        /// //http://www.fortiguard.com/ip_rep/index.php?data=" + ipInput + "&lookup=Lookup"
+        /// 
         /// </summary>
         /// <param name="data"></param>
         private void RunFortiguard(string data)
         {
+            string url = "http://www.fortiguard.com/ip_rep/index.php?data=" + data + "&lookup=Lookup";
+
             try
             {
+                if (_sources.Has(Global.Source.Fortiguard) == false)
+                {
+                    return;
+                }
+
                 OnMessage("Analysing via " + Global.Source.Fortiguard.GetEnumDescription());
 
                 GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download("http://www.fortiguard.com/ip_rep/index.php?data=" + data + "&lookup=Lookup", _retries);
+                WebClientResult wcr = wc.Download(url, _retries);
                 if (wcr.IsError == true)
                 {
                     SendDefaultResult(Global.Source.Fortiguard,
-                                      "http://www.fortiguard.com/ip_rep/index.php?data=" + data + "&lookup=Lookup",
+                                      url,
                                       "Error: " + wcr.Response);
                     return;
                 }
@@ -387,22 +427,22 @@ namespace TargetAnalyser
                     Result result = new Result();
                     result.Source = Global.Source.Fortiguard;
                     result.Info = "Classification: " + match.Groups[1].Value;
-                    result.ParentUrl = "http://www.fortiguard.com/ip_rep/index.php?data=" + data + "&lookup=Lookup";
-                    result.Url = "http://www.fortiguard.com/ip_rep/index.php?data=" + data + "&lookup=Lookup";
+                    result.ParentUrl = url;
+                    result.Url = url;
 
                     OnResultIdentified(new List<Result> { result });
                 }
                 else
                 {
                     SendDefaultResult(Global.Source.Fortiguard,
-                                      "http://www.fortiguard.com/ip_rep/index.php?data=" + data + "&lookup=Lookup",
+                                      url,
                                       "No record");
                 }
             }
             catch (Exception ex) 
             {
                 SendDefaultResult(Global.Source.Fortiguard,
-                                  "http://www.fortiguard.com/ip_rep/index.php?data=" + data + "&lookup=Lookup",
+                                  url,
                                   "Error");
             }
         }
@@ -413,16 +453,23 @@ namespace TargetAnalyser
         /// <param name="data"></param>
         private void RunAlienVault(string data)
         {
+            string url = "http://labs.alienvault.com/labs/index.php/projects/open-source-ip-reputation-portal/information-about-ip/?ip=" + data;
+
             try
             {
+                if (_sources.Has(Global.Source.AlienVault) == false)
+                {
+                    return;
+                }
+
                 OnMessage("Analysing via " + Global.Source.AlienVault.GetEnumDescription());
 
                 GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download("http://labs.alienvault.com/labs/index.php/projects/open-source-ip-reputation-portal/information-about-ip/?ip=" + data, _retries);
+                WebClientResult wcr = wc.Download(url, _retries);
                 if (wcr.IsError == true)
                 {
                     SendDefaultResult(Global.Source.AlienVault,
-                                      "http://labs.alienvault.com/labs/index.php/projects/open-source-ip-reputation-portal/information-about-ip/?ip=" + data,
+                                      url,
                                       "Error: " + wcr.Response);
                     return;
                 }
@@ -434,22 +481,22 @@ namespace TargetAnalyser
                     Result result = new Result();
                     result.Source = Global.Source.AlienVault;
                     result.Info = "Identified: " + data;
-                    result.ParentUrl = "http://labs.alienvault.com/labs/index.php/projects/open-source-ip-reputation-portal/information-about-ip/?ip=" + data;
-                    result.Url = "http://labs.alienvault.com/labs/index.php/projects/open-source-ip-reputation-portal/information-about-ip/?ip=" + data;
+                    result.ParentUrl = url;
+                    result.Url = url;
 
                     OnResultIdentified(new List<Result> { result });
                 }
                 else
                 {
                     SendDefaultResult(Global.Source.AlienVault,
-                                      "http://labs.alienvault.com/labs/index.php/projects/open-source-ip-reputation-portal/information-about-ip/?ip=" + data,
+                                      url,
                                       "No record");
                 }
             }
             catch (Exception ex) 
             {
                 SendDefaultResult(Global.Source.AlienVault,
-                                  "http://labs.alienvault.com/labs/index.php/projects/open-source-ip-reputation-portal/information-about-ip/?ip=" + data,
+                                  url,
                                   "Error");
             }
         }
@@ -458,18 +505,25 @@ namespace TargetAnalyser
         /// http://www.malwaredomainlist.com/mdl.php?search=freefblikes.net&colsearch=All&quantity=50
         /// </summary>
         /// <param name="data"></param>
-        private void RunMalwareDomain(string data)
+        private void RunMalwareDomainList(string data)
         {
+            string url = "http://www.malwaredomainlist.com/mdl.php?search=" + data + "&colsearch=All&quantity=50";
+
             try
             {
+                if (_sources.Has(Global.Source.MalwareDomainlist) == false)
+                {
+                    return;
+                }
+
                 OnMessage("Analysing via " + Global.Source.MalwareDomainlist.GetEnumDescription());
 
                 GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download("http://www.malwaredomainlist.com/mdl.php?search=" + data + "&colsearch=All&quantity=50", _retries);
+                WebClientResult wcr = wc.Download(url, _retries);
                 if (wcr.IsError == true)
                 {
                     SendDefaultResult(Global.Source.MalwareDomainlist,
-                                      "http://www.malwaredomainlist.com/mdl.php?search=" + data + "&colsearch=All&quantity=50",
+                                      url,
                                       "Error: " + wcr.Response);
                     return;
                 }
@@ -483,8 +537,8 @@ namespace TargetAnalyser
                     Result result = new Result();
                     result.Source = Global.Source.MalwareDomainlist;
                     result.Info = "Malware: " + match.Groups[1].Value + "#Registrant: " + match.Groups[2].Value;
-                    result.ParentUrl = "http://www.malwaredomainlist.com/mdl.php?search=" + data + "&colsearch=All&quantity=50";
-                    result.Url = "http://www.malwaredomainlist.com/mdl.php?search=" + data + "&colsearch=All&quantity=50";
+                    result.ParentUrl = url;
+                    result.Url = url;
 
                     results.Add(result);
                 }
@@ -495,15 +549,15 @@ namespace TargetAnalyser
                 }
                 else
                 {
-                    SendDefaultResult(Global.Source.MalwareDomainlist, 
-                                      "http://www.malwaredomainlist.com/mdl.php?search=" + data + "&colsearch=All&quantity=50", 
+                    SendDefaultResult(Global.Source.MalwareDomainlist,
+                                      url, 
                                       "No record");
                 }
             }
             catch (Exception ex) 
             {
                 SendDefaultResult(Global.Source.MalwareDomainlist,
-                                  "http://www.malwaredomainlist.com/mdl.php?search=" + data + "&colsearch=All&quantity=50",
+                                  url,
                                   "Error");
             }
         }
@@ -514,16 +568,23 @@ namespace TargetAnalyser
         /// <param name="data"></param>
         private void RunBfk(string data)
         {
+            string url = "http://www.bfk.de/bfk_dnslogger.html?query=" + data;
+
             try
             {
+                if (_sources.Has(Global.Source.Bfk) == false)
+                {
+                    return;
+                }
+
                 OnMessage("Analysing via " + Global.Source.Bfk.GetEnumDescription());
 
                 GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download("http://www.bfk.de/bfk_dnslogger.html?query=" + data, _retries);
+                WebClientResult wcr = wc.Download(url, _retries);
                 if (wcr.IsError == true)
                 {
                     SendDefaultResult(Global.Source.Bfk,
-                                      "http://www.bfk.de/bfk_dnslogger.html?query=" + data,
+                                      url,
                                       "Error: " + wcr.Response);
                     return;
                 }
@@ -537,7 +598,7 @@ namespace TargetAnalyser
                     Result result = new Result();
                     result.Source = Global.Source.Bfk;
                     result.Info = "Result: " + match.Groups[2].Value;
-                    result.ParentUrl = "http://www.bfk.de/bfk_dnslogger.html?query=" + data;
+                    result.ParentUrl = url;
                     result.Url = match.Groups[1].Value;
 
                     results.Add(result);
@@ -550,14 +611,14 @@ namespace TargetAnalyser
                 else
                 {
                     SendDefaultResult(Global.Source.Bfk,
-                                     "http://www.bfk.de/bfk_dnslogger.html?query=" + data,
+                                      url,
                                       "No record");
                 }
             }
             catch (Exception ex)
             {
                 SendDefaultResult(Global.Source.Bfk,
-                                  "http://www.bfk.de/bfk_dnslogger.html?query=" + data,
+                                  url,
                                   "Error");
             }
         }
@@ -568,16 +629,23 @@ namespace TargetAnalyser
         /// <param name="data"></param>
         private void RunVirusTotalDns(string data)
         {
+            string url = "https://www.virustotal.com/en/ip-address/" + data + "/information/";
+
             try
             {
+                if (_sources.Has(Global.Source.VirusTotalDns) == false)
+                {
+                    return;
+                }
+
                 OnMessage("Analysing via " + Global.Source.VirusTotalDns.GetEnumDescription());
 
                 GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download("https://www.virustotal.com/en/ip-address/" + data + "/information/", _retries);
+                WebClientResult wcr = wc.Download(url, _retries);
                 if (wcr.IsError == true)
                 {
                     SendDefaultResult(Global.Source.VirusTotalDns,
-                                      "https://www.virustotal.com/latest-scan/" + data,
+                                      url,
                                       "Error: " + wcr.Response);
                     return;
                 }
@@ -587,7 +655,7 @@ namespace TargetAnalyser
                 if (matchUnknown.Success == true)
                 {
                     SendDefaultResult(Global.Source.VirusTotalDns,
-                                      "https://www.virustotal.com/en/ip-address/" + data + "/information/",
+                                      url,
                                       "No record");
                     return;
                 }
@@ -601,7 +669,7 @@ namespace TargetAnalyser
                     Result result = new Result();
                     result.Source = Global.Source.VirusTotalDns;
                     result.Info = "Result: " + match.Groups[2].Value;
-                    result.ParentUrl = "https://www.virustotal.com/en/ip-address/" + data + "/information/";
+                    result.ParentUrl = url;
                     result.Url = "https://www.virustotal.com/en/domain/" + match.Groups[1].Value + "/information/";
 
                     results.Add(result);
@@ -615,15 +683,15 @@ namespace TargetAnalyser
                 else
                 {
                     SendDefaultResult(Global.Source.VirusTotalDns,
-                                     "https://www.virustotal.com/en/ip-address/" + data + "/information/",
+                                      url,
                                       "No records");
                 }
             }
             catch (Exception ex)
             {
                 SendDefaultResult(Global.Source.VirusTotalDns,
-                                 "https://www.virustotal.com/en/ip-address/" + data + "/information/",
-                                 "Error");
+                                  url,
+                                  "Error");
             }
         }
 
@@ -637,6 +705,11 @@ namespace TargetAnalyser
 
             try
             {
+                if (_sources.Has(Global.Source.HpHosts) == false)
+                {
+                    return;
+                }
+
                 OnMessage("Analysing via " + Global.Source.HpHosts.GetEnumDescription());
 
                 GZipWebClient wc = new GZipWebClient();
@@ -681,6 +754,11 @@ namespace TargetAnalyser
 
             try
             {
+                if (_sources.Has(Global.Source.HurricaneElectric) == false)
+                {
+                    return;
+                }
+
                 OnMessage("Analysing via " + Global.Source.HurricaneElectric.GetEnumDescription());
 
                 GZipWebClient wc = new GZipWebClient();
@@ -718,20 +796,25 @@ namespace TargetAnalyser
 
         #region Hash Provider Methods
         /// <summary>
-        /// http://www.threatexpert.com/report.aspx?md5=" + md5
+        /// 
         /// </summary>
         /// <param name="data"></param>
         private void RunThreatExpert(string data)
         {
+            string url = "http://www.threatexpert.com/report.aspx?md5=" + data;
+
             try
             {
+                if (_sources.Has(Global.Source.ThreatExpert) == false)
+                {
+                    return;
+                }
+
                 GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download("http://www.threatexpert.com/report.aspx?md5=" + data, _retries);
+                WebClientResult wcr = wc.Download(url, _retries);
                 if (wcr.IsError == true)
                 {
-                    SendDefaultResult(Global.Source.ThreatExpert,
-                                      "http://www.malwaredomainlist.com/mdl.php?search=" + data + "&colsearch=All&quantity=50",
-                                      "Error: " + wcr.Response);
+                    SendDefaultResult(Global.Source.ThreatExpert, url, "Error: " + wcr.Response);
                     return;
                 }
 
@@ -742,23 +825,19 @@ namespace TargetAnalyser
                     Result result = new Result();
                     result.Source = Global.Source.ThreatExpert;
                     result.Info = "Malware: " + match.Groups[1].Value;
-                    result.ParentUrl = "http://www.threatexpert.com/report.aspx?md5=" + data;
-                    result.Url = "http://www.threatexpert.com/report.aspx?md5=" + data;
+                    result.ParentUrl = url;
+                    result.Url = url;
 
                     OnResultIdentified(new List<Result> { result });
                 }
                 else
                 {
-                    SendDefaultResult(Global.Source.ThreatExpert,
-                                      "http://www.threatexpert.com/report.aspx?md5=" + data,
-                                      "No record");
+                    SendDefaultResult(Global.Source.ThreatExpert, url, "No record");
                 }
             }
             catch (Exception ex)
             {
-                SendDefaultResult(Global.Source.ThreatExpert,
-                                  "http://www.threatexpert.com/report.aspx?md5=" + data,
-                                  "Error");
+                SendDefaultResult(Global.Source.ThreatExpert, url, "Error");
             }
         }
 
@@ -768,15 +847,20 @@ namespace TargetAnalyser
         /// <param name="data"></param>
         private void RunVxVault(string data)
         {
+            string url = "http://vxvault.siri-urz.net/ViriList.php?MD5=" + data;
+
             try
             {
+                if (_sources.Has(Global.Source.VxVault) == false)
+                {
+                    return;
+                }
+
                 GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download("http://vxvault.siri-urz.net/ViriList.php?MD5=" + data, _retries);
+                WebClientResult wcr = wc.Download(url, _retries);
                 if (wcr.IsError == true)
                 {
-                    SendDefaultResult(Global.Source.VxVault,
-                                      "http://www.malwaredomainlist.com/mdl.php?search=" + data + "&colsearch=All&quantity=50",
-                                      "Error: " + wcr.Response);
+                    SendDefaultResult(Global.Source.VxVault, url, "Error: " + wcr.Response);
                     return;
                 }
 
@@ -789,7 +873,7 @@ namespace TargetAnalyser
                     Result result = new Result();
                     result.Source = Global.Source.VxVault;
                     result.Info = "Malware: " + match.Groups[1].Value;
-                    result.ParentUrl = "http://vxvault.siri-urz.net/ViriList.php?MD5=" + data;
+                    result.ParentUrl = url;
                     result.Url = "http://vxvault.siri-urz.net/ViriFiche.php?ID=" + match.Groups[1].Value;
 
                     OnResultIdentified(new List<Result> { result });
@@ -801,16 +885,12 @@ namespace TargetAnalyser
                 }
                 else
                 {
-                    SendDefaultResult(Global.Source.VxVault, 
-                                     "http://vxvault.siri-urz.net/ViriList.php?MD5=" + data, 
-                                     "No record");
+                    SendDefaultResult(Global.Source.VxVault, url, "No record");
                 }
             }
             catch (Exception ex)
             {
-                SendDefaultResult(Global.Source.VxVault,
-                                  "http://vxvault.siri-urz.net/ViriList.php?MD5=" + data,
-                                  "Error");
+                SendDefaultResult(Global.Source.VxVault, url, "Error");
             }
         }
 
@@ -820,15 +900,20 @@ namespace TargetAnalyser
         /// <param name="data"></param>
         private void RunMinotaurAnalysis(string data)
         {
+            string url = "http://minotauranalysis.com/search.aspx?q=" + data;
+
             try
             {
+                if (_sources.Has(Global.Source.MinotaurAnalysis) == false)
+                {
+                    return;
+                }
+
                 GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download("http://minotauranalysis.com/search.aspx?q=" + data, _retries);
+                WebClientResult wcr = wc.Download(url, _retries);
                 if (wcr.IsError == true)
                 {
-                    SendDefaultResult(Global.Source.MinotaurAnalysis,
-                                      "http://minotauranalysis.com/search.aspx?q=" + data,
-                                      "Error: " + wcr.Response);
+                    SendDefaultResult(Global.Source.MinotaurAnalysis, url, "Error: " + wcr.Response);
                     return;
                 }
 
@@ -841,23 +926,19 @@ namespace TargetAnalyser
                     Result result = new Result();
                     result.Source = Global.Source.MinotaurAnalysis;
                     result.Info = "Malware: " + data;
-                    result.ParentUrl = "http://minotauranalysis.com/search.aspx?q=" + data;
-                    result.Url = "http://minotauranalysis.com/search.aspx?q=" + data;
+                    result.ParentUrl = url;
+                    result.Url = url;
 
                     OnResultIdentified(new List<Result> { result });
                 }
                 else
                 {
-                    SendDefaultResult(Global.Source.MinotaurAnalysis,
-                                     "http://minotauranalysis.com/search.aspx?q=" + data,
-                                     "No record");
+                    SendDefaultResult(Global.Source.MinotaurAnalysis, url, "No record");
                 }
             }
             catch (Exception ex)
             {
-                SendDefaultResult(Global.Source.MinotaurAnalysis,
-                                  "http://minotauranalysis.com/search.aspx?q=" + data,
-                                  "Error");
+                SendDefaultResult(Global.Source.MinotaurAnalysis, url, "Error");
             }
         }
 
@@ -867,15 +948,20 @@ namespace TargetAnalyser
         /// <param name="data"></param>
         private void RunVirusTotal(string data)
         {
+            string url = "https://www.virustotal.com/latest-scan/" + data;
+
             try
             {
+                if (_sources.Has(Global.Source.VirusTotalHash) == false)
+                {
+                    return;
+                }
+
                 GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download("https://www.virustotal.com/latest-scan/" + data, _retries);
+                WebClientResult wcr = wc.Download(url, _retries);
                 if (wcr.IsError == true)
                 {
-                    SendDefaultResult(Global.Source.VirusTotalHash,
-                                      "https://www.virustotal.com/latest-scan/" + data,
-                                      "Error: " + wcr.Response);
+                    SendDefaultResult(Global.Source.VirusTotalHash, url, "Error: " + wcr.Response);
                     return;
                 }
                 List<Result> results = new List<Result>();
@@ -887,23 +973,19 @@ namespace TargetAnalyser
                     Result result = new Result();
                     result.Source = Global.Source.VirusTotalHash;
                     result.Info = "Detection Ratio: " + match.Groups[1].Value;
-                    result.ParentUrl = "https://www.virustotal.com/latest-scan/" + data;
-                    result.Url = "https://www.virustotal.com/latest-scan/" + data;
+                    result.ParentUrl = url;
+                    result.Url = url;
 
                     OnResultIdentified(new List<Result> { result });
                 }
                 else
                 {
-                    SendDefaultResult(Global.Source.VirusTotalHash,
-                                     "https://www.virustotal.com/latest-scan/" + data,
-                                     "No record");
+                    SendDefaultResult(Global.Source.VirusTotalHash, url, "No record");
                 }
             }
             catch (Exception ex)
             {
-                SendDefaultResult(Global.Source.VirusTotalHash,
-                                 "https://www.virustotal.com/latest-scan/" + data,
-                                 "Error");
+                SendDefaultResult(Global.Source.VirusTotalHash, url, "Error");
             }
         }
         #endregion

@@ -1,3 +1,10 @@
+v0.0.4
+------
+- Modified to allow user selection of sources/providers
+- Modified to persist user settings
+- Modified to allow command line running
+- Improved code layout
+- Added ability to export to CSV, XML and JSON
 
 v0.0.3
 ------
