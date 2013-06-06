@@ -1,3 +1,8 @@
+v0.0.5
+------
+- Updated the robtex regex as they have modified the HTML
+- Added a spoof User-Agent since the Hurricane Electric queries were not working correctly
+
 v0.0.4
 ------
 - Modified to allow user selection of sources/providers

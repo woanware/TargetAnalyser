@@ -361,7 +361,8 @@ namespace TargetAnalyser
 
                 List<Result> results = new List<Result>();
 
-                Regex regex = new Regex(@"<a href="".*#shared""\s?>(.*)</a>", RegexOptions.IgnoreCase);
+                //Regex regex = new Regex(@"<a href="".*#shared""\s?>(.*)</a>", RegexOptions.IgnoreCase);
+                Regex regex = new Regex(@"[dns|host]\.robtex\.com.+\s>(.*)\<\/a\>", RegexOptions.IgnoreCase);
                 MatchCollection matches = regex.Matches(wcr.Response);
                 foreach (Match match in matches)
                 {
