@@ -1,3 +1,7 @@
+v0.0.6
+------
+- Added Google Diagnostics as an IP/domain provider
+
 v0.0.5
 ------
 - Updated the robtex regex as they have modified the HTML

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
 using System.Text;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Heijden.DNS;
@@ -64,6 +65,7 @@ namespace TargetAnalyser
                         RunVirusTotalDns(data);
                         RunHurricaneElectric(data);
                         RunHpHosts(data);
+                        RunGoogleDiagnostic(data);
                         break;
                     case Global.TargetType.Url:
                         RunUrlVoid(data);
@@ -75,6 +77,7 @@ namespace TargetAnalyser
                         RunBfk(data);
                         RunVirusTotalDns(data);
                         RunHpHosts(data);
+                        RunGoogleDiagnostic(data);
                         break;
                     case Global.TargetType.Md5:
                         RunThreatExpert(data);
@@ -327,7 +330,7 @@ namespace TargetAnalyser
         /// <param name="data"></param>
         private void RunRobTex(string data)
         {
-            string url = "http://robtex.com/" + data + ".html";
+            string url = "http://pop.robtex.com/" + data + ".html";
 
             try
             {
@@ -361,16 +364,38 @@ namespace TargetAnalyser
 
                 List<Result> results = new List<Result>();
 
+                // Remove all of the extra text, just get to the A record stuff to minimise erronous domains
+                string temp = wcr.Response;
+                int index = temp.IndexOf("span id=\"sharedha\">Host names sharing IP with A records", StringComparison.InvariantCultureIgnoreCase);
+                if (index > -1)
+                {
+                    temp = temp.Substring(index);
+                }
+                else
+                {
+                    SendDefaultResult(Global.Source.Robtex,
+                                      url,
+                                      "No A records");
+                    return;
+                }
+
                 //Regex regex = new Regex(@"<a href="".*#shared""\s?>(.*)</a>", RegexOptions.IgnoreCase);
-                Regex regex = new Regex(@"[dns|host]\.robtex\.com.+\s>(.*)\<\/a\>", RegexOptions.IgnoreCase);
-                MatchCollection matches = regex.Matches(wcr.Response);
+                Regex regex = new Regex(@"(dns|host)\.robtex\.com.+\s>(.*)\<\/a\>", RegexOptions.IgnoreCase);
+                MatchCollection matches = regex.Matches(temp);
                 foreach (Match match in matches)
                 {
+                    // Ensure that we haven't already added it as the regex is not great
+                    var check = (from r in results where r.Info == ("A Record: " + match.Groups[2].Value) select r).SingleOrDefault();
+                    if (check != null)
+                    {
+                        continue;
+                    }
+
                     Result result = new Result();
                     result.Source = Global.Source.Robtex;
-                    result.Info = "A Record: " + match.Groups[1].Value;
+                    result.Info = "A Record: " + match.Groups[2].Value;
                     result.ParentUrl = url;
-                    result.Url = "http://robtex.com/" + match.Groups[1].Value + ".html";
+                    result.Url = "http://robtex.com/" + match.Groups[2].Value + ".html";
 
                     results.Add(result);
                 }
@@ -596,6 +621,13 @@ namespace TargetAnalyser
                 MatchCollection matches = regex.Matches(wcr.Response);
                 foreach (Match match in matches)
                 {
+                    // Ensure that we haven't already added it 
+                    var check = (from r in results where r.Info == ("Result: " + match.Groups[2].Value) select r).SingleOrDefault();
+                    if (check != null)
+                    {
+                        continue;
+                    }
+
                     Result result = new Result();
                     result.Source = Global.Source.Bfk;
                     result.Info = "Result: " + match.Groups[2].Value;
@@ -772,7 +804,7 @@ namespace TargetAnalyser
                     return;
                 }
 
-                Regex regex = new Regex("This site is NOT currently listed in hpHosts", RegexOptions.IgnoreCase);
+                Regex regex = new Regex("did not return any results", RegexOptions.IgnoreCase);
                 Match match = regex.Match(wcr.Response);
                 if (match.Success == true)
                 {
@@ -794,6 +826,60 @@ namespace TargetAnalyser
             }
         }         
         #endregion
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        private void RunGoogleDiagnostic(string data)
+        {
+            string url = "http://www.google.com/safebrowsing/diagnostic?site=" + data;
+
+            try
+            {
+                if (_sources.Has(Global.Source.GoogleDiagnostics) == false)
+                {
+                    return;
+                }
+
+                OnMessage("Analysing via " + Global.Source.GoogleDiagnostics.GetEnumDescription());
+
+                GZipWebClient wc = new GZipWebClient();
+                WebClientResult wcr = wc.Download(url, _retries);
+                if (wcr.IsError == true)
+                {
+                    SendDefaultResult(Global.Source.GoogleDiagnostics,
+                                      url,
+                                      "Error: " + wcr.Response);
+                    return;
+                }
+
+                Regex regex1 = new Regex("This site is not currently listed as suspicious", RegexOptions.IgnoreCase);
+                Match match1 = regex1.Match(wcr.Response);
+                if (match1.Success == false)
+                {
+                    Regex regex2 = new Regex("No, this site has not hosted malicious software over the past 90 days", RegexOptions.IgnoreCase);
+                    Match match2 = regex2.Match(wcr.Response);
+                    if (match2.Success == false)
+                    {
+                        SendDefaultResult(Global.Source.GoogleDiagnostics,
+                                      url,
+                                      "No record: " + data);
+                        return;
+                    }
+                }
+
+                SendDefaultResult(Global.Source.GoogleDiagnostics,
+                                  url,
+                                  "Identified: " + data);
+            }
+            catch (Exception ex)
+            {
+                SendDefaultResult(Global.Source.GoogleDiagnostics,
+                                  url,
+                                  "Error");
+            }
+        }  
 
         #region Hash Provider Methods
         /// <summary>

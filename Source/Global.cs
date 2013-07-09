@@ -72,7 +72,9 @@ namespace TargetAnalyser
             [Description("HpHosts")]
             HpHosts = 4096,
             [Description("Hurricane Electric")]
-            HurricaneElectric = 8192
+            HurricaneElectric = 8192,
+            [Description("Google Diagnostics")]
+            GoogleDiagnostics = 16384
         }
     }
 }

@@ -262,6 +262,23 @@ namespace TargetAnalyser
             Result result = (Result)listResults.SelectedObject;
             Misc.ShellExecuteFile(result.ParentUrl);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void contextCopyInfo_Click(object sender, EventArgs e)
+        {
+            if (listResults.SelectedObjects.Count != 1)
+            {
+                return;
+            }
+
+            Result result = (Result)listResults.SelectedObject;
+            Clipboard.SetText(result.Info);
+            UpdateStatusBar("Info copied to clipboard: " + result.Info);
+        }
         #endregion
 
         #region Menu Event Handlers

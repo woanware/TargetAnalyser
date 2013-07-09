@@ -51,9 +51,13 @@
             this.listResults = new BrightIdeasSoftware.ObjectListView();
             this.olvcSource = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvcResult = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.olvcParentUrl = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.olvUrl = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.context = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.contextShow = new System.Windows.Forms.ToolStripMenuItem();
             this.contextShowParent = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextCopyInfo = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextSep1 = new System.Windows.Forms.ToolStripSeparator();
             this.menuStrip.SuspendLayout();
             this.toolStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
@@ -147,7 +151,7 @@
             // menuHelpAbout
             // 
             this.menuHelpAbout.Name = "menuHelpAbout";
-            this.menuHelpAbout.Size = new System.Drawing.Size(152, 22);
+            this.menuHelpAbout.Size = new System.Drawing.Size(107, 22);
             this.menuHelpAbout.Text = "About";
             this.menuHelpAbout.Click += new System.EventHandler(this.menuHelpAbout_Click);
             // 
@@ -179,7 +183,7 @@
             this.cboTargetType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboTargetType.Items.AddRange(new object[] {
             "IP",
-            "URL",
+            "Domain",
             "MD5"});
             this.cboTargetType.Name = "cboTargetType";
             this.cboTargetType.Size = new System.Drawing.Size(121, 25);
@@ -213,9 +217,13 @@
             // 
             this.listResults.AllColumns.Add(this.olvcSource);
             this.listResults.AllColumns.Add(this.olvcResult);
+            this.listResults.AllColumns.Add(this.olvcParentUrl);
+            this.listResults.AllColumns.Add(this.olvUrl);
             this.listResults.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.olvcSource,
-            this.olvcResult});
+            this.olvcResult,
+            this.olvcParentUrl,
+            this.olvUrl});
             this.listResults.ContextMenuStrip = this.context;
             this.listResults.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listResults.FullRowSelect = true;
@@ -241,28 +249,55 @@
             this.olvcResult.CellPadding = null;
             this.olvcResult.Text = "Info";
             // 
+            // olvcParentUrl
+            // 
+            this.olvcParentUrl.AspectName = "ParentUrl";
+            this.olvcParentUrl.CellPadding = null;
+            this.olvcParentUrl.Text = "Parent URL";
+            this.olvcParentUrl.Width = 101;
+            // 
+            // olvUrl
+            // 
+            this.olvUrl.AspectName = "Url";
+            this.olvUrl.CellPadding = null;
+            this.olvUrl.Text = "URL";
+            // 
             // context
             // 
             this.context.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.contextShow,
-            this.contextShowParent});
+            this.contextShowParent,
+            this.contextSep1,
+            this.contextCopyInfo});
             this.context.Name = "context";
             this.context.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.context.Size = new System.Drawing.Size(141, 48);
+            this.context.Size = new System.Drawing.Size(153, 98);
             // 
             // contextShow
             // 
             this.contextShow.Name = "contextShow";
-            this.contextShow.Size = new System.Drawing.Size(140, 22);
+            this.contextShow.Size = new System.Drawing.Size(152, 22);
             this.contextShow.Text = "Show";
             this.contextShow.Click += new System.EventHandler(this.contextShow_Click);
             // 
             // contextShowParent
             // 
             this.contextShowParent.Name = "contextShowParent";
-            this.contextShowParent.Size = new System.Drawing.Size(140, 22);
+            this.contextShowParent.Size = new System.Drawing.Size(152, 22);
             this.contextShowParent.Text = "Show Parent";
             this.contextShowParent.Click += new System.EventHandler(this.contextShowParent_Click);
+            // 
+            // contextCopyInfo
+            // 
+            this.contextCopyInfo.Name = "contextCopyInfo";
+            this.contextCopyInfo.Size = new System.Drawing.Size(152, 22);
+            this.contextCopyInfo.Text = "Copy Info";
+            this.contextCopyInfo.Click += new System.EventHandler(this.contextCopyInfo_Click);
+            // 
+            // contextSep1
+            // 
+            this.contextSep1.Name = "contextSep1";
+            this.contextSep1.Size = new System.Drawing.Size(149, 6);
             // 
             // FormMain
             // 
@@ -323,6 +358,10 @@
         private System.Windows.Forms.ToolStripMenuItem menuFileExportCsv;
         private System.Windows.Forms.ToolStripMenuItem menuFileExportJson;
         private System.Windows.Forms.ToolStripMenuItem menuFileExportXml;
+        private BrightIdeasSoftware.OLVColumn olvcParentUrl;
+        private BrightIdeasSoftware.OLVColumn olvUrl;
+        private System.Windows.Forms.ToolStripSeparator contextSep1;
+        private System.Windows.Forms.ToolStripMenuItem contextCopyInfo;
     }
 }
 
