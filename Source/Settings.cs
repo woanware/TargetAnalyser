@@ -19,6 +19,7 @@ namespace TargetAnalyser
         public Global.Source Sources { get; set; }
         public int Retries { get; set; }
         private const string FILENAME = "Settings.xml";
+        public bool UrlVoidPassive { get; set; }
         #endregion
 
         #region Constructor
@@ -28,6 +29,7 @@ namespace TargetAnalyser
         public Settings()
         {
             Retries = 3;
+            UrlVoidPassive = true;
         }
         #endregion
 
@@ -57,6 +59,7 @@ namespace TargetAnalyser
                     FormSize = settings.FormSize;
                     FormState = settings.FormState;
                     Sources = settings.Sources;
+                    UrlVoidPassive = settings.UrlVoidPassive;
                     return string.Empty;
                 }
             }

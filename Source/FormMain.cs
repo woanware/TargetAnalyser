@@ -90,7 +90,17 @@ namespace TargetAnalyser
         /// <param name="results"></param>
         private void OnAnalyser_Result(List<Result> results)
         {
-            listResults.AddObjects(results);
+            if (_analyser.InputMode == Global.InputMode.Single)
+            {
+                listResults.AddObjects(results);
+            }
+            else
+            {
+                if (results.First().Identified == true)
+                {
+                    string ret = Output.Process(results, Global.OutputMode.Csv, _analyser.OutputFile, false);
+                }
+            }
         }
         #endregion
 
@@ -138,13 +148,13 @@ namespace TargetAnalyser
             switch (cboTargetType.SelectedIndex)
             {
                 case 0:
-                    _analyser.Analyse(_settings.Sources, Global.TargetType.Ip, txtTarget.Text);
+                    _analyser.Analyse(_settings.Sources, Global.TargetType.Ip, txtTarget.Text, _settings);
                     break;
                 case 1:
-                    _analyser.Analyse(_settings.Sources, Global.TargetType.Url, txtTarget.Text);
+                    _analyser.Analyse(_settings.Sources, Global.TargetType.Domain, txtTarget.Text, _settings);
                     break;
                 case 2:
-                    _analyser.Analyse(_settings.Sources, Global.TargetType.Md5, txtTarget.Text);
+                    _analyser.Analyse(_settings.Sources, Global.TargetType.Hash, txtTarget.Text, _settings);
                     break;
             }
         }
@@ -342,7 +352,7 @@ namespace TargetAnalyser
                 }
 
                 List<Result> results = listResults.Objects.Cast<Result>().ToList();
-                string ret = Output.Process(results, Global.OutputMode.Json, saveFileDialog.FileName);
+                string ret = Output.Process(results, Global.OutputMode.Json, saveFileDialog.FileName, true);
             }
         }
 
@@ -353,7 +363,20 @@ namespace TargetAnalyser
         /// <param name="e"></param>
         private void menuFileExportCsv_Click(object sender, EventArgs e)
         {
+            using (new HourGlass(this))
+            {
+                SaveFileDialog saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Title = "Select the export CSV file";
+                saveFileDialog.Filter = "CSV Files|*.csv";
+                if (saveFileDialog.ShowDialog(this) == DialogResult.Cancel)
+                {
+                    return;
 
+                }
+
+                List<Result> results = listResults.Objects.Cast<Result>().ToList();
+                string ret = Output.Process(results, Global.OutputMode.Csv, saveFileDialog.FileName, true);
+            }
         }
 
         /// <summary>
@@ -375,9 +398,50 @@ namespace TargetAnalyser
                 }
 
                 List<Result> results = listResults.Objects.Cast<Result>().ToList();
-                string ret = Output.Process(results, Global.OutputMode.Xml, saveFileDialog.FileName);
+                string ret = Output.Process(results, Global.OutputMode.Xml, saveFileDialog.FileName, true);
             }
         }
-        #endregion
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void menuFileImport_Click(object sender, EventArgs e)
+        {
+            using (FormImport form = new FormImport())
+            {
+                if (form.ShowDialog(this) == System.Windows.Forms.DialogResult.Cancel)
+                {
+                    return;
+                }
+
+                // Output a blank header line for the output CSV
+                List<Result> results = new List<Result>();
+                string ret = Output.Process(results, Global.OutputMode.Csv, form.OutputFile, true);
+
+                _hourGlass = new HourGlass(this);
+                _analyser.Analyse(_settings.Sources, form.TargetType, form.ImportFile, form.OutputFile, _settings);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void menuToolsOptions_Click(object sender, EventArgs e)
+        {
+            using (FormOptions form = new FormOptions(_settings))
+            {
+                if (form.ShowDialog(this) == System.Windows.Forms.DialogResult.Cancel)
+                {
+                    return;
+                }
+
+                _settings = form.Settings;
+            }
+        }
+        #endregion 
     }
 }

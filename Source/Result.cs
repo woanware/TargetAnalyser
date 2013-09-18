@@ -10,6 +10,7 @@
         public string Info { get; set; }
         public string ParentUrl { get; set; }
         public string Url { get; set; }
+        public bool Identified { get; set; }
         #endregion
 
         /// <summary>

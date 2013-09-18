@@ -42,7 +42,8 @@ namespace TargetAnalyser
         /// <returns></returns>
         public static string Process(List<Result> results, 
                                      Global.OutputMode outputMode, 
-                                     string file)
+                                     string file, 
+                                     bool outputHeaders)
         {
             //Func<List<Result>, Global.OutputMode, string, string> outputResults = delegate(List<Result> a, Global.OutputMode b, string c)
             //{
@@ -101,11 +102,14 @@ namespace TargetAnalyser
                             using (StreamWriter streamWriter = new StreamWriter(fileStream))
                             using (CsvHelper.CsvWriter csvWriter = new CsvHelper.CsvWriter(streamWriter, csvConfiguration))
                             {
-                                csvWriter.WriteField("Source");
-                                csvWriter.WriteField("Info");
-                                csvWriter.WriteField("ParentUrl");
-                                csvWriter.WriteField("Url");
-                                csvWriter.NextRecord();
+                                if (outputHeaders == true)
+                                {
+                                    csvWriter.WriteField("Source");
+                                    csvWriter.WriteField("Info");
+                                    csvWriter.WriteField("ParentUrl");
+                                    csvWriter.WriteField("Url");
+                                    csvWriter.NextRecord();
+                                }
 
                                 foreach (var result in results)
                                 {

@@ -57,21 +57,43 @@ namespace TargetAnalyser
                         }
                     }
 
-                    if (_options.Output.Length > 0)
+                    if (_options.Input.Length > 0)
                     {
-                        // Validate the format parameter
-                        switch (_options.Format.ToLower())
+                        if (_options.Output.Length == 0)
                         {
-                            case "c":
-                            case "j":
-                            case "x":
-                                break;
-                            default:
-                                Console.WriteLine("Invalid format parameter (either c, j or x)");
-                                return;
+                            Console.WriteLine("The output file must be supplied when using an input list");
+                            return;
+                        }
+
+                        if (_options.Format.Length > 0)
+                        {
+                            Console.WriteLine("The output format is ignored when using an input list: " + _options.Format);
+                        }   
+                    }
+                    else
+                    {
+                        if (_options.Output.Length == 0)
+                        {
+                            Console.WriteLine("The target must be supplied when not using an input list");
+                            return;
+                        }
+
+                        if (_options.Output.Length > 0)
+                        {
+                            // Validate the format parameter
+                            switch (_options.Format.ToLower())
+                            {
+                                case "c":
+                                case "j":
+                                case "x":
+                                    break;
+                                default:
+                                    Console.WriteLine("Invalid format parameter (either c, j or x)");
+                                    return;
+                            }
                         }
                     }
-                    
+
                     _results = new List<Result>();
 
                     _analyser = new Analyser("", _settings.Retries);
@@ -79,20 +101,45 @@ namespace TargetAnalyser
                     _analyser.Complete += OnAnalyser_Complete;
                     _analyser.Message += OnAnalyser_Message;
 
-                    switch (_options.Mode.ToLower())
+                    if (_options.Input.Length > 0)
                     {
-                        case "i":
-                            _analyser.Analyse(_settings.Sources, Global.TargetType.Ip, _options.Target);
-                            break;
-                        case "d":
-                            _analyser.Analyse(_settings.Sources, Global.TargetType.Url, _options.Target);
-                            break;
-                        case "h":
-                            _analyser.Analyse(_settings.Sources, Global.TargetType.Md5, _options.Target);
-                            break;
-                        default:
-                            Console.WriteLine("Invalid mode parameter (either i, d or h)");
-                            return;
+                        // Output a blank header line for the output CSV
+                        List<Result> results = new List<Result>();
+                        string ret = Output.Process(results, Global.OutputMode.Csv, _options.Output, true);
+
+                        switch (_options.Mode.ToLower())
+                        {
+                            case "i":
+                                _analyser.Analyse(_settings.Sources, Global.TargetType.Ip, _options.Input, _options.Output, _settings);
+                                break;
+                            case "d":
+                                _analyser.Analyse(_settings.Sources, Global.TargetType.Domain, _options.Input, _options.Output, _settings);
+                                break;
+                            case "h":
+                                _analyser.Analyse(_settings.Sources, Global.TargetType.Hash, _options.Input, _options.Output, _settings);
+                                break;
+                            default:
+                                Console.WriteLine("Invalid mode parameter (either i, d or h)");
+                                return;
+                        }
+                    }
+                    else
+                    {
+                        switch (_options.Mode.ToLower())
+                        {
+                            case "i":
+                                _analyser.Analyse(_settings.Sources, Global.TargetType.Ip, _options.Target, _settings);
+                                break;
+                            case "d":
+                                _analyser.Analyse(_settings.Sources, Global.TargetType.Domain, _options.Target, _settings);
+                                break;
+                            case "h":
+                                _analyser.Analyse(_settings.Sources, Global.TargetType.Hash, _options.Target, _settings);
+                                break;
+                            default:
+                                Console.WriteLine("Invalid mode parameter (either i, d or h)");
+                                return;
+                        }
                     }
 
                     _reset = new ManualResetEvent(false);
@@ -103,8 +150,8 @@ namespace TargetAnalyser
                     Console.WriteLine("An error occurred: " + ex.Message);
                 }
                 return;
-            #else
-                Application.EnableVisualStyles();
+#else
+            Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 Application.Run(new FormMain());
             #endif
@@ -116,23 +163,26 @@ namespace TargetAnalyser
         /// </summary>
         private static void OnAnalyser_Complete()
         {
-            if (_options.Output.Length > 0)
+            if (_analyser.InputMode == Global.InputMode.Single)
             {
-                string ret = string.Empty;
-                switch (_options.Format.ToLower())
+                if (_options.Output.Length > 0)
                 {
-                    case "c":
-                        ret = Output.Process(_results, Global.OutputMode.Csv, _options.Output);
-                        break;
-                    case "j":
-                        ret = Output.Process(_results, Global.OutputMode.Json, _options.Output);
-                        break;
-                    case "x":
-                        ret = Output.Process(_results, Global.OutputMode.Xml, _options.Output);
-                        break;
-                    default:
-                        Console.WriteLine("Invalid format parameter (either c, j or x)");
-                        break;
+                    string ret = string.Empty;
+                    switch (_options.Format.ToLower())
+                    {
+                        case "c":
+                            ret = Output.Process(_results, Global.OutputMode.Csv, _options.Output, true);
+                            break;
+                        case "j":
+                            ret = Output.Process(_results, Global.OutputMode.Json, _options.Output, true);
+                            break;
+                        case "x":
+                            ret = Output.Process(_results, Global.OutputMode.Xml, _options.Output, true);
+                            break;
+                        default:
+                            Console.WriteLine("Invalid format parameter (either c, j or x)");
+                            break;
+                    }
                 }
             }
 
@@ -156,7 +206,17 @@ namespace TargetAnalyser
         /// <param name="results"></param>
         private static void OnAnalyser_Result(List<Result> results)
         {
-            _results.AddRange(results);
+            if (_analyser.InputMode == Global.InputMode.Single)
+            {
+                _results.AddRange(results);
+            }
+            else
+            {
+                if (results.First().Identified == true)
+                {
+                    string ret = Output.Process(results, Global.OutputMode.Csv, _analyser.OutputFile, false);
+                }
+            }
         }
         #endregion
     }

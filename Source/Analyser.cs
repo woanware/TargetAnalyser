@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
-using Heijden.DNS;
-using VirusTotalNET;
 using woanware;
 
 namespace TargetAnalyser
@@ -23,9 +22,12 @@ namespace TargetAnalyser
         public event ResultEvent ResultsIdentified;
         public event woanware.Events.DefaultEvent Complete;
 
+        private Settings _settings;
         private Global.Source _sources;
         private string _apiKey;
         private int _retries;
+        public Global.InputMode InputMode { get; private set; }
+        public string OutputFile { get; private set; }
 
         /// <summary>
         /// 
@@ -44,11 +46,15 @@ namespace TargetAnalyser
         /// <param name="sources"></param>
         /// <param name="targetType"></param>
         /// <param name="data"></param>
+        /// <param name="settings"></param>
         public void Analyse(Global.Source sources, 
                             Global.TargetType targetType, 
-                            string data)
+                            string data,
+                            Settings settings)
         {
+            InputMode = Global.InputMode.Single;
             _sources = sources;
+            _settings = settings;
 
             (new Thread(() =>
             {
@@ -67,7 +73,7 @@ namespace TargetAnalyser
                         RunHpHosts(data);
                         RunGoogleDiagnostic(data);
                         break;
-                    case Global.TargetType.Url:
+                    case Global.TargetType.Domain:
                         RunUrlVoid(data);
                         RunDns(data);
                         RunRobTex(data);
@@ -79,12 +85,81 @@ namespace TargetAnalyser
                         RunHpHosts(data);
                         RunGoogleDiagnostic(data);
                         break;
-                    case Global.TargetType.Md5:
+                    case Global.TargetType.Hash:
                         RunThreatExpert(data);
                         RunVxVault(data);
                         RunMinotaurAnalysis(data);
                         RunVirusTotal(data);
                         break;
+                }
+
+                OnComplete();
+
+            })).Start();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sources"></param>
+        /// <param name="targetType"></param>
+        /// <param name="inputFile"></param>
+        /// <param name="outputFile"></param>
+        public void Analyse(Global.Source sources, 
+                            Global.TargetType targetType, 
+                            string inputFile,
+                            string outputFile,
+                            Settings settings)
+        {
+            InputMode = Global.InputMode.List;
+            OutputFile = outputFile;
+            _sources = sources;
+            _settings = settings;
+
+            (new Thread(() =>
+            {
+                using (var fileStream = File.OpenRead(inputFile))
+                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, 4096)) 
+                {
+                    string line = string.Empty;
+                    while ((line = streamReader.ReadLine()) != null)
+                    {
+                        line = line.Trim();
+                        switch (targetType)
+                        {
+                            case Global.TargetType.Ip:
+                                RunIpVoid(line);
+                                RunDns(line);
+                                RunRobTex(line);
+                                RunAlienVault(line);
+                                RunFortiguard(line);
+                                RunMalwareDomainList(line);
+                                RunBfk(line);
+                                RunVirusTotalDns(line);
+                                RunHurricaneElectric(line);
+                                RunHpHosts(line);
+                                RunGoogleDiagnostic(line);
+                                break;
+                            case Global.TargetType.Domain:
+                                RunUrlVoid(line);
+                                RunDns(line);
+                                RunRobTex(line);
+                                RunAlienVault(line);
+                                RunFortiguard(line);
+                                RunMalwareDomainList(line);
+                                RunBfk(line);
+                                RunVirusTotalDns(line);
+                                RunHpHosts(line);
+                                RunGoogleDiagnostic(line);
+                                break;
+                            case Global.TargetType.Hash:
+                                RunThreatExpert(line);
+                                RunVxVault(line);
+                                RunMinotaurAnalysis(line);
+                                RunVirusTotal(line);
+                                break;
+                        }
+                    }
                 }
 
                 OnComplete();
@@ -134,6 +209,7 @@ namespace TargetAnalyser
                         result.Info = "Blacklisted: " + match.Groups[1].Value;
                         result.ParentUrl = url;
                         result.Url = match.Groups[1].Value;
+                        result.Identified = true;
 
                         results.Add(result);
                     }
@@ -151,37 +227,48 @@ namespace TargetAnalyser
                 }
                 else
                 {
-                    NameValueCollection nvc = new NameValueCollection();
-                    nvc.Add("ip", data);
-                    nvc.Add("go", "Scan Now");
-                    wc.Headers.Add("Content-type", "application/x-www-form-urlencoded");
-                    byte[] tempPost = wc.UploadValues("http://ipvoid.com", "POST", nvc);
-                    string responsePost = Encoding.ASCII.GetString(tempPost);
-
-                    List<Result> results = new List<Result>();
-
-                    Regex regex = new Regex(@"Detected\<\/font\>\<\/td..td..a.rel..nofollow..href.""(.{6,70})\""\stitle\=\""View", RegexOptions.IgnoreCase);
-                    MatchCollection matches = regex.Matches(responsePost);
-                    foreach (Match match in matches)
+                    if (_settings.UrlVoidPassive == false)
                     {
-                        Result result = new Result();
-                        result.Source = Global.Source.IpVoid;
-                        result.Info = "Blacklisted: " + match.Groups[1].Value;
-                        result.ParentUrl = url;
-                        result.Url = match.Groups[1].Value;
+                        NameValueCollection nvc = new NameValueCollection();
+                        nvc.Add("ip", data);
+                        nvc.Add("go", "Scan Now");
+                        wc.Headers.Add("Content-type", "application/x-www-form-urlencoded");
+                        byte[] tempPost = wc.UploadValues("http://ipvoid.com", "POST", nvc);
+                        string responsePost = Encoding.ASCII.GetString(tempPost);
 
-                        results.Add(result);
-                    }
+                        List<Result> results = new List<Result>();
 
-                    if (results.Count > 0)
-                    {
-                        OnResultIdentified(results);
+                        Regex regex = new Regex(@"Detected\<\/font\>\<\/td..td..a.rel..nofollow..href.""(.{6,70})\""\stitle\=\""View", RegexOptions.IgnoreCase);
+                        MatchCollection matches = regex.Matches(responsePost);
+                        foreach (Match match in matches)
+                        {
+                            Result result = new Result();
+                            result.Source = Global.Source.IpVoid;
+                            result.Info = "Blacklisted: " + match.Groups[1].Value;
+                            result.ParentUrl = url;
+                            result.Url = match.Groups[1].Value;
+                            result.Identified = true;
+
+                            results.Add(result);
+                        }
+
+                        if (results.Count > 0)
+                        {
+                            OnResultIdentified(results);
+                        }
+                        else
+                        {
+                            SendDefaultResult(Global.Source.IpVoid,
+                                              url,
+                                              "No record");
+                        }
                     }
                     else
                     {
                         SendDefaultResult(Global.Source.IpVoid,
-                                          url,
-                                          "No record");
+                                      url,
+                                      "Not Blacklisted");
+
                     }
                 }
             }
@@ -199,6 +286,11 @@ namespace TargetAnalyser
         /// <param name="data"></param>
         private void RunUrlVoid(string data)
         {
+            if (data.StartsWith("www.") == true)
+            {
+                data = data.Substring(4);
+            }
+
             string url = "http://urlvoid.com/scan/" + data;
 
             try
@@ -223,6 +315,10 @@ namespace TargetAnalyser
                 Regex regexNoMatch = new Regex(@"The website is not blacklisted", RegexOptions.IgnoreCase);
                 if (regexNoMatch.Match(wcr.Response).Success == true)
                 {
+                    SendDefaultResult(Global.Source.UrlVoid,
+                                      url,
+                                      "Not Blacklisted");
+
                     return;
                 }
 
@@ -240,6 +336,7 @@ namespace TargetAnalyser
                         result.Info = "Blacklisted: " + match.Groups[1].Value;
                         result.ParentUrl = url;
                         result.Url = match.Groups[1].Value;
+                        result.Identified = true;
 
                         results.Add(result);
                     }
@@ -257,37 +354,48 @@ namespace TargetAnalyser
                 }
                 else
                 {
-                    NameValueCollection nvc = new NameValueCollection();
-                    nvc.Add("url", data);
-                    nvc.Add("check", "Submit");
-                    wc.Headers.Add("Content-type", "application/x-www-form-urlencoded");
-                    byte[] tempPost = wc.UploadValues("http://urlvoid.com", "POST", nvc);
-                    string responsePost = Encoding.ASCII.GetString(tempPost);
-
-                    List<Result> results = new List<Result>();
-
-                    Regex regex = new Regex(@"DETECTED.{25,40}href\=\""(.{10,50})\""\stitle", RegexOptions.IgnoreCase);
-                    MatchCollection matches = regex.Matches(responsePost);
-                    foreach (Match match in matches)
+                    if (_settings.UrlVoidPassive == false)
                     {
-                        Result result = new Result();
-                        result.Source = Global.Source.UrlVoid;
-                        result.Info = "Blacklisted: " + match.Groups[1].Value;
-                        result.ParentUrl = url;
-                        result.Url = match.Groups[1].Value;
+                        NameValueCollection nvc = new NameValueCollection();
+                        nvc.Add("url", data);
+                        nvc.Add("check", "Submit");
+                        wc.Headers.Add("Content-type", "application/x-www-form-urlencoded");
+                        byte[] tempPost = wc.UploadValues("http://urlvoid.com", "POST", nvc);
+                        string responsePost = Encoding.ASCII.GetString(tempPost);
 
-                        results.Add(result);
-                    }
+                        List<Result> results = new List<Result>();
 
-                    if (results.Count > 0)
-                    {
-                        OnResultIdentified(results);
+                        Regex regex = new Regex(@"DETECTED.{25,40}href\=\""(.{10,50})\""\stitle", RegexOptions.IgnoreCase);
+                        MatchCollection matches = regex.Matches(responsePost);
+                        foreach (Match match in matches)
+                        {
+                            Result result = new Result();
+                            result.Source = Global.Source.UrlVoid;
+                            result.Info = "Blacklisted: " + match.Groups[1].Value;
+                            result.ParentUrl = url;
+                            result.Url = match.Groups[1].Value;
+                            result.Identified = true;
+
+                            results.Add(result);
+                        }
+
+                        if (results.Count > 0)
+                        {
+                            OnResultIdentified(results);
+                        }
+                        else
+                        {
+                            SendDefaultResult(Global.Source.UrlVoid,
+                                          url,
+                                          "No record");
+                        }
                     }
                     else
                     {
                         SendDefaultResult(Global.Source.UrlVoid,
                                       url,
-                                      "No record");
+                                      "Not Blacklisted");
+
                     }
                 }    
             }
@@ -314,12 +422,12 @@ namespace TargetAnalyser
 
                // OnMessage("Analysing via " + Global.Source.Dn.GetEnumDescription());
 
-                Resolver resolver = new Resolver("8.8.8.8");
-                Response response = resolver.Query(data, QType.A);
-                foreach (var a in response.Answers)
-                {
+                //Resolver resolver = new Resolver("8.8.8.8");
+                //Response response = resolver.Query(data, QType.A);
+                //foreach (var a in response.Answers)
+                //{
 
-                }
+                //}
             }
             catch (Exception) { }
         }
@@ -396,6 +504,7 @@ namespace TargetAnalyser
                     result.Info = "A Record: " + match.Groups[2].Value;
                     result.ParentUrl = url;
                     result.Url = "http://robtex.com/" + match.Groups[2].Value + ".html";
+                    result.Identified = true;
 
                     results.Add(result);
                 }
@@ -456,6 +565,11 @@ namespace TargetAnalyser
                     result.ParentUrl = url;
                     result.Url = url;
 
+                    if (match.Groups[1].Value.ToLower() != "unclassified")
+                    {
+                        result.Identified = true;
+                    }
+
                     OnResultIdentified(new List<Result> { result });
                 }
                 else
@@ -509,6 +623,7 @@ namespace TargetAnalyser
                     result.Info = "Identified: " + data;
                     result.ParentUrl = url;
                     result.Url = url;
+                    result.Identified = true;
 
                     OnResultIdentified(new List<Result> { result });
                 }
@@ -565,6 +680,7 @@ namespace TargetAnalyser
                     result.Info = "Malware: " + match.Groups[1].Value + "#Registrant: " + match.Groups[2].Value;
                     result.ParentUrl = url;
                     result.Url = url;
+                    result.Identified = true;
 
                     results.Add(result);
                 }
@@ -633,6 +749,7 @@ namespace TargetAnalyser
                     result.Info = "Result: " + match.Groups[2].Value;
                     result.ParentUrl = url;
                     result.Url = match.Groups[1].Value;
+                    result.Identified = true;
 
                     results.Add(result);
                 }
@@ -704,10 +821,10 @@ namespace TargetAnalyser
                     result.Info = "Result: " + match.Groups[2].Value;
                     result.ParentUrl = url;
                     result.Url = "https://www.virustotal.com/en/domain/" + match.Groups[1].Value + "/information/";
+                    result.Identified = true;
 
                     results.Add(result);
                 }
-
 
                 if (results.Count > 0)
                 {
@@ -734,6 +851,7 @@ namespace TargetAnalyser
         /// <param name="data"></param>
         private void RunHpHosts(string data)
         {
+            return;
             string url = "http://hosts-file.net/default.asp?s=" + data;
 
             try
@@ -765,9 +883,16 @@ namespace TargetAnalyser
                     return;
                 }
 
-                SendDefaultResult(Global.Source.HpHosts,
-                                  url,
-                                  "Identified");
+                Result result = new Result();
+                result.Source = Global.Source.HpHosts;
+                result.Info = "Result: " + match.Groups[2].Value;
+                result.ParentUrl = url;
+                result.Url = url;
+                result.Identified = true;
+
+                List<Result> results = new List<Result>() { result };
+
+                OnResultIdentified(results);
             }
             catch (Exception ex)
             {
@@ -783,6 +908,7 @@ namespace TargetAnalyser
         /// <param name="data"></param>
         private void RunHurricaneElectric(string data)
         {
+            return;
             string url = "http://bgp.he.net/ip/" + data;
 
             try
@@ -814,9 +940,16 @@ namespace TargetAnalyser
                     return;
                 }
 
-                SendDefaultResult(Global.Source.HurricaneElectric,
-                                  url,
-                                  "Identified");
+                Result result = new Result();
+                result.Source = Global.Source.HurricaneElectric;
+                result.Info = "Result: " + match.Groups[2].Value;
+                result.ParentUrl = url;
+                result.Url = url;
+                result.Identified = true;
+
+                List<Result> results = new List<Result>() { result };
+
+                OnResultIdentified(results);
             }
             catch (Exception ex)
             {
@@ -869,9 +1002,16 @@ namespace TargetAnalyser
                     }
                 }
 
-                SendDefaultResult(Global.Source.GoogleDiagnostics,
-                                  url,
-                                  "Identified: " + data);
+                Result result = new Result();
+                result.Source = Global.Source.GoogleDiagnostics;
+                result.Info = "Result: " + data;
+                result.ParentUrl = url + data;
+                result.Url = url + data;
+                result.Identified = true;
+
+                List<Result> results = new List<Result>() { result };
+
+                OnResultIdentified(results);
             }
             catch (Exception ex)
             {
@@ -1069,6 +1209,11 @@ namespace TargetAnalyser
                 {
                     SendDefaultResult(Global.Source.VirusTotalHash, url, "No record");
                 }
+
+                if (this.InputMode == Global.InputMode.List)
+                {
+                    Thread.Sleep(new TimeSpan(0, 0, 10));
+                }
             }
             catch (Exception ex)
             {
@@ -1084,6 +1229,7 @@ namespace TargetAnalyser
         /// <param name="source"></param>
         /// <param name="url"></param>
         /// <param name="message"></param>
+        /// <param name="identified"></param>
         private void SendDefaultResult(Global.Source source, 
                                        string url, 
                                        string message)

@@ -11,6 +11,15 @@ namespace TargetAnalyser
         /// <summary>
         /// 
         /// </summary>
+        public enum InputMode
+        {
+            Single = 0,
+            List = 1
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public enum View
         {
             Full = 0,
@@ -33,8 +42,8 @@ namespace TargetAnalyser
         public enum TargetType
         {
             Ip = 0,
-            Url = 1,
-            Md5 = 2
+            Domain = 1,
+            Hash = 2
         }
 
         /// <summary>

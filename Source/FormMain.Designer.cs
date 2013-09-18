@@ -32,10 +32,12 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.menuFile = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuFileImport = new System.Windows.Forms.ToolStripMenuItem();
             this.menuFileExport = new System.Windows.Forms.ToolStripMenuItem();
             this.menuFileExportCsv = new System.Windows.Forms.ToolStripMenuItem();
             this.menuFileExportJson = new System.Windows.Forms.ToolStripMenuItem();
             this.menuFileExportXml = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.menuFileExit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuTools = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolsProviders = new System.Windows.Forms.ToolStripMenuItem();
@@ -56,8 +58,10 @@
             this.context = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.contextShow = new System.Windows.Forms.ToolStripMenuItem();
             this.contextShowParent = new System.Windows.Forms.ToolStripMenuItem();
-            this.contextCopyInfo = new System.Windows.Forms.ToolStripMenuItem();
             this.contextSep1 = new System.Windows.Forms.ToolStripSeparator();
+            this.contextCopyInfo = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
+            this.menuToolsOptions = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.toolStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
@@ -81,11 +85,20 @@
             // menuFile
             // 
             this.menuFile.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuFileImport,
             this.menuFileExport,
+            this.toolStripMenuItem1,
             this.menuFileExit});
             this.menuFile.Name = "menuFile";
             this.menuFile.Size = new System.Drawing.Size(37, 20);
             this.menuFile.Text = "File";
+            // 
+            // menuFileImport
+            // 
+            this.menuFileImport.Name = "menuFileImport";
+            this.menuFileImport.Size = new System.Drawing.Size(110, 22);
+            this.menuFileImport.Text = "Import";
+            this.menuFileImport.Click += new System.EventHandler(this.menuFileImport_Click);
             // 
             // menuFileExport
             // 
@@ -94,7 +107,7 @@
             this.menuFileExportJson,
             this.menuFileExportXml});
             this.menuFileExport.Name = "menuFileExport";
-            this.menuFileExport.Size = new System.Drawing.Size(107, 22);
+            this.menuFileExport.Size = new System.Drawing.Size(110, 22);
             this.menuFileExport.Text = "Export";
             // 
             // menuFileExportCsv
@@ -118,17 +131,24 @@
             this.menuFileExportXml.Text = "XML";
             this.menuFileExportXml.Click += new System.EventHandler(this.menuFileExportXml_Click);
             // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(107, 6);
+            // 
             // menuFileExit
             // 
             this.menuFileExit.Name = "menuFileExit";
-            this.menuFileExit.Size = new System.Drawing.Size(107, 22);
+            this.menuFileExit.Size = new System.Drawing.Size(110, 22);
             this.menuFileExit.Text = "Exit";
             this.menuFileExit.Click += new System.EventHandler(this.menuFileExit_Click);
             // 
             // menuTools
             // 
             this.menuTools.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuToolsProviders});
+            this.menuToolsProviders,
+            this.toolStripMenuItem2,
+            this.menuToolsOptions});
             this.menuTools.Name = "menuTools";
             this.menuTools.Size = new System.Drawing.Size(48, 20);
             this.menuTools.Text = "Tools";
@@ -136,7 +156,7 @@
             // menuToolsProviders
             // 
             this.menuToolsProviders.Name = "menuToolsProviders";
-            this.menuToolsProviders.Size = new System.Drawing.Size(123, 22);
+            this.menuToolsProviders.Size = new System.Drawing.Size(152, 22);
             this.menuToolsProviders.Text = "Providers";
             this.menuToolsProviders.Click += new System.EventHandler(this.menuToolsProviders_Click);
             // 
@@ -271,33 +291,45 @@
             this.contextCopyInfo});
             this.context.Name = "context";
             this.context.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.context.Size = new System.Drawing.Size(153, 98);
+            this.context.Size = new System.Drawing.Size(141, 76);
             // 
             // contextShow
             // 
             this.contextShow.Name = "contextShow";
-            this.contextShow.Size = new System.Drawing.Size(152, 22);
+            this.contextShow.Size = new System.Drawing.Size(140, 22);
             this.contextShow.Text = "Show";
             this.contextShow.Click += new System.EventHandler(this.contextShow_Click);
             // 
             // contextShowParent
             // 
             this.contextShowParent.Name = "contextShowParent";
-            this.contextShowParent.Size = new System.Drawing.Size(152, 22);
+            this.contextShowParent.Size = new System.Drawing.Size(140, 22);
             this.contextShowParent.Text = "Show Parent";
             this.contextShowParent.Click += new System.EventHandler(this.contextShowParent_Click);
-            // 
-            // contextCopyInfo
-            // 
-            this.contextCopyInfo.Name = "contextCopyInfo";
-            this.contextCopyInfo.Size = new System.Drawing.Size(152, 22);
-            this.contextCopyInfo.Text = "Copy Info";
-            this.contextCopyInfo.Click += new System.EventHandler(this.contextCopyInfo_Click);
             // 
             // contextSep1
             // 
             this.contextSep1.Name = "contextSep1";
-            this.contextSep1.Size = new System.Drawing.Size(149, 6);
+            this.contextSep1.Size = new System.Drawing.Size(137, 6);
+            // 
+            // contextCopyInfo
+            // 
+            this.contextCopyInfo.Name = "contextCopyInfo";
+            this.contextCopyInfo.Size = new System.Drawing.Size(140, 22);
+            this.contextCopyInfo.Text = "Copy Info";
+            this.contextCopyInfo.Click += new System.EventHandler(this.contextCopyInfo_Click);
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(149, 6);
+            // 
+            // menuToolsOptions
+            // 
+            this.menuToolsOptions.Name = "menuToolsOptions";
+            this.menuToolsOptions.Size = new System.Drawing.Size(152, 22);
+            this.menuToolsOptions.Text = "Options";
+            this.menuToolsOptions.Click += new System.EventHandler(this.menuToolsOptions_Click);
             // 
             // FormMain
             // 
@@ -362,6 +394,10 @@
         private BrightIdeasSoftware.OLVColumn olvUrl;
         private System.Windows.Forms.ToolStripSeparator contextSep1;
         private System.Windows.Forms.ToolStripMenuItem contextCopyInfo;
+        private System.Windows.Forms.ToolStripMenuItem menuFileImport;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
+        private System.Windows.Forms.ToolStripMenuItem menuToolsOptions;
     }
 }
 

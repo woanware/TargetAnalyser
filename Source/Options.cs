@@ -9,17 +9,20 @@ namespace TargetAnalyser
     /// </summary>
     internal class Options : CommandLineOptionsBase
     {
-        [Option("t", "target", Required = true, DefaultValue = "", HelpText = "Target (either an IP, domain or MD5 hash")]
+        [Option("t", "target", Required = false, DefaultValue = "", HelpText = "Target (either an IP, domain or MD5 hash")]
         public string Target { get; set; }
 
         [Option("m", "mode", Required = true, DefaultValue = "", HelpText = "Valid values are i, d or h")]
         public string Mode { get; set; }
 
-        [Option("f", "format", Required = false, DefaultValue = "c", HelpText = "Output format e.g. c (csv), j (json) or x (xml) (Defaults to csv)")]
+        [Option("f", "format", Required = false, DefaultValue = "", HelpText = "Output format e.g. c (csv), j (json) or x (xml)")]
         public string Format { get; set; }
 
         [Option("o", "output", Required = false, DefaultValue = "", HelpText = "Output file")]
         public string Output { get; set; }
+
+        [Option("i", "input", Required = false, DefaultValue = "", HelpText = "Input file")]
+        public string Input { get; set; }
 
         [HelpOption]
         public string GetUsage()

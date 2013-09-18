@@ -40,6 +40,13 @@ namespace TargetAnalyser
             request.AutomaticDecompression = DecompressionMethods.GZip |
                                              DecompressionMethods.Deflate;
             request.UserAgent = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1468.0 Safari/537.36";
+
+            IWebProxy defaultProxy = WebRequest.GetSystemWebProxy();
+            Uri uriProxy = defaultProxy.GetProxy(address);
+            if (uriProxy.AbsoluteUri != string.Empty)
+            {
+                request.Proxy = defaultProxy;
+            }
             return request;
         }
 
