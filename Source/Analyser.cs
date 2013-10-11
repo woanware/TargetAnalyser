@@ -588,12 +588,12 @@ namespace TargetAnalyser
         }
 
         /// <summary>
-        /// http://labs.alienvault.com/labs/index.php/projects/open-source-ip-reputation-portal/information-about-ip/?ip=" + ipInput
+        /// http://www.alienvault.com/apps/rep_monitor/ip/213.186.33.19
         /// </summary>
         /// <param name="data"></param>
         private void RunAlienVault(string data)
         {
-            string url = "http://labs.alienvault.com/labs/index.php/projects/open-source-ip-reputation-portal/information-about-ip/?ip=" + data;
+            string url = "http://www.alienvault.com/apps/rep_monitor/ip/" + data;
 
             try
             {
@@ -613,8 +613,7 @@ namespace TargetAnalyser
                                       "Error: " + wcr.Response);
                     return;
                 }
-
-                Regex regex = new Regex(".*IP not found.*", RegexOptions.IgnoreCase);
+                Regex regex = new Regex("IP Address Can Not be Located", RegexOptions.IgnoreCase);
                 Match match = regex.Match(wcr.Response);
                 if (match.Success == false)
                 {
