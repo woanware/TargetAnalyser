@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Heijden.DNS;
+using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
 using woanware;
 
 namespace TargetAnalyser
@@ -22,11 +23,10 @@ namespace TargetAnalyser
         public event ResultEvent ResultsIdentified;
         public event woanware.Events.DefaultEvent Complete;
 
-        private Settings _settings;
-        private Global.Source _sources;
-        private string _apiKey;
+        private CountdownEvent cde;
+        public Inputs Inputs { get; set; }
+        public ApiKeys ApiKeys { get; set; }
         private int _retries;
-        public Global.InputMode InputMode { get; private set; }
         public string OutputFile { get; private set; }
 
         /// <summary>
@@ -34,9 +34,8 @@ namespace TargetAnalyser
         /// </summary>
         /// <param name="apiKey"></param>
         /// <param name="retries"></param>
-        public Analyser(string apiKey, int retries)
+        public Analyser(int retries)
         {
-            _apiKey = apiKey;
             _retries = retries;
         }
 
@@ -47,1181 +46,301 @@ namespace TargetAnalyser
         /// <param name="targetType"></param>
         /// <param name="data"></param>
         /// <param name="settings"></param>
-        public void Analyse(Global.Source sources, 
-                            Global.TargetType targetType, 
-                            string data,
-                            Settings settings)
+        public void Analyse(string[] dataTypes,
+                            string data)
         {
-            InputMode = Global.InputMode.Single;
-            _sources = sources;
-            _settings = settings;
-
             (new Thread(() =>
             {
-                switch (targetType)
-                {
-                    case Global.TargetType.Ip:
-                        RunIpVoid(data);
-                        RunDns(data);
-                        RunRobTex(data);
-                        RunAlienVault(data);
-                        RunFortiguard(data);
-                        RunMalwareDomainList(data);
-                        RunBfk(data);
-                        RunVirusTotalDns(data);
-                        RunHurricaneElectric(data);
-                        RunHpHosts(data);
-                        RunGoogleDiagnostic(data);
-                        break;
-                    case Global.TargetType.Domain:
-                        RunUrlVoid(data);
-                        RunDns(data);
-                        RunRobTex(data);
-                        RunAlienVault(data);
-                        RunFortiguard(data);
-                        RunMalwareDomainList(data);
-                        RunBfk(data);
-                        RunVirusTotalDns(data);
-                        RunHpHosts(data);
-                        RunGoogleDiagnostic(data);
-                        break;
-                    case Global.TargetType.Hash:
-                        RunThreatExpert(data);
-                        RunVxVault(data);
-                        RunMinotaurAnalysis(data);
-                        RunVirusTotal(data);
-                        break;
-                }
+                cde = new CountdownEvent(this.Inputs.Data.Count);
+                Parallel.ForEach<Input>(this.Inputs.Data, item => Analyse(dataTypes, item, data));
+                cde.Wait();
 
                 OnComplete();
 
             })).Start();
-        }
+        }        
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="sources"></param>
-        /// <param name="targetType"></param>
-        /// <param name="inputFile"></param>
-        /// <param name="outputFile"></param>
-        public void Analyse(Global.Source sources, 
-                            Global.TargetType targetType, 
-                            string inputFile,
-                            string outputFile,
-                            Settings settings)
-        {
-            InputMode = Global.InputMode.List;
-            OutputFile = outputFile;
-            _sources = sources;
-            _settings = settings;
-
-            (new Thread(() =>
-            {
-                using (var fileStream = File.OpenRead(inputFile))
-                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, 4096)) 
-                {
-                    string line = string.Empty;
-                    while ((line = streamReader.ReadLine()) != null)
-                    {
-                        line = line.Trim();
-                        switch (targetType)
-                        {
-                            case Global.TargetType.Ip:
-                                RunIpVoid(line);
-                                RunDns(line);
-                                RunRobTex(line);
-                                RunAlienVault(line);
-                                RunFortiguard(line);
-                                RunMalwareDomainList(line);
-                                RunBfk(line);
-                                RunVirusTotalDns(line);
-                                RunHurricaneElectric(line);
-                                RunHpHosts(line);
-                                RunGoogleDiagnostic(line);
-                                break;
-                            case Global.TargetType.Domain:
-                                RunUrlVoid(line);
-                                RunDns(line);
-                                RunRobTex(line);
-                                RunAlienVault(line);
-                                RunFortiguard(line);
-                                RunMalwareDomainList(line);
-                                RunBfk(line);
-                                RunVirusTotalDns(line);
-                                RunHpHosts(line);
-                                RunGoogleDiagnostic(line);
-                                break;
-                            case Global.TargetType.Hash:
-                                RunThreatExpert(line);
-                                RunVxVault(line);
-                                RunMinotaurAnalysis(line);
-                                RunVirusTotal(line);
-                                break;
-                        }
-                    }
-                }
-
-                OnComplete();
-
-            })).Start();
-        }
-
-        #region IP/URL Providers
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <param name="dataTypes"></param>
+        /// <param name="input"></param>
         /// <param name="data"></param>
-        private void RunIpVoid(string data)
-        {
-            string url = "http://ipvoid.com/scan/" + data;
-
-            try
-            {
-                if (_sources.Has(Global.Source.IpVoid) == false)
-                {
-                    return;
-                }
-
-                OnMessage("Analysing via " + Global.Source.IpVoid.GetEnumDescription());
-
-                GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download(url, _retries);
-                if (wcr.IsError == true)
-                {
-                    SendDefaultResult(Global.Source.IpVoid,
-                                      url,
-                                      "Error: " + wcr.Response);
-                    return;
-                }
-
-                Regex regexNoMatch = new Regex(@"An\sError\soccurred", RegexOptions.IgnoreCase);
-                if (regexNoMatch.Match(wcr.Response).Success == false)
-                {
-                    List<Result> results = new List<Result>();
-
-                    Regex regex = new Regex(@"Detected\<\/font\>\<\/td..td..a.rel..nofollow..href.""(.{6,70})\""\stitle\=\""View", RegexOptions.IgnoreCase);
-                    MatchCollection matches = regex.Matches(wcr.Response);
-                    foreach (Match match in matches)
-                    {
-                        Result result = new Result();
-                        result.Source = Global.Source.IpVoid;
-                        result.Info = "Blacklisted: " + match.Groups[1].Value;
-                        result.ParentUrl = url;
-                        result.Url = match.Groups[1].Value;
-                        result.Identified = true;
-
-                        results.Add(result);
-                    }
-
-                    if (results.Count > 0)
-                    {
-                        OnResultIdentified(results);
-                    }
-                    else
-                    {
-                        SendDefaultResult(Global.Source.IpVoid,
-                                          url,
-                                          "No record");
-                    }
-                }
-                else
-                {
-                    if (_settings.UrlVoidPassive == false)
-                    {
-                        NameValueCollection nvc = new NameValueCollection();
-                        nvc.Add("ip", data);
-                        nvc.Add("go", "Scan Now");
-                        wc.Headers.Add("Content-type", "application/x-www-form-urlencoded");
-                        byte[] tempPost = wc.UploadValues("http://ipvoid.com", "POST", nvc);
-                        string responsePost = Encoding.ASCII.GetString(tempPost);
-
-                        List<Result> results = new List<Result>();
-
-                        Regex regex = new Regex(@"Detected\<\/font\>\<\/td..td..a.rel..nofollow..href.""(.{6,70})\""\stitle\=\""View", RegexOptions.IgnoreCase);
-                        MatchCollection matches = regex.Matches(responsePost);
-                        foreach (Match match in matches)
-                        {
-                            Result result = new Result();
-                            result.Source = Global.Source.IpVoid;
-                            result.Info = "Blacklisted: " + match.Groups[1].Value;
-                            result.ParentUrl = url;
-                            result.Url = match.Groups[1].Value;
-                            result.Identified = true;
-
-                            results.Add(result);
-                        }
-
-                        if (results.Count > 0)
-                        {
-                            OnResultIdentified(results);
-                        }
-                        else
-                        {
-                            SendDefaultResult(Global.Source.IpVoid,
-                                              url,
-                                              "No record");
-                        }
-                    }
-                    else
-                    {
-                        SendDefaultResult(Global.Source.IpVoid,
-                                      url,
-                                      "Not Blacklisted");
-
-                    }
-                }
-            }
-            catch (Exception ex) 
-            {
-                SendDefaultResult(Global.Source.IpVoid,
-                                  url,
-                                  "Error");
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="data"></param>
-        private void RunUrlVoid(string data)
-        {
-            if (data.StartsWith("www.") == true)
-            {
-                data = data.Substring(4);
-            }
-
-            string url = "http://urlvoid.com/scan/" + data;
-
-            try
-            {
-                if (_sources.Has(Global.Source.UrlVoid) == false)
-                {
-                    return;
-                }
-
-                OnMessage("Analysing via " + Global.Source.UrlVoid.GetEnumDescription());
-
-                GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download(url, _retries);
-                if (wcr.IsError == true)
-                {
-                    SendDefaultResult(Global.Source.UrlVoid,
-                                      url,
-                                      "Error: " + wcr.Response);
-                    return;
-                }
-
-                Regex regexNoMatch = new Regex(@"The website is not blacklisted", RegexOptions.IgnoreCase);
-                if (regexNoMatch.Match(wcr.Response).Success == true)
-                {
-                    SendDefaultResult(Global.Source.UrlVoid,
-                                      url,
-                                      "Not Blacklisted");
-
-                    return;
-                }
-
-                regexNoMatch = new Regex(@"AN ERROR OCCURRED", RegexOptions.IgnoreCase);
-                if (regexNoMatch.Match(wcr.Response).Success == false)
-                {
-                    List<Result> results = new List<Result>();
-
-                    Regex regex = new Regex(@"DETECTED.{25,40}href\=\""(.{10,50})\""\stitle", RegexOptions.IgnoreCase);
-                    MatchCollection matches = regex.Matches(wcr.Response);
-                    foreach (Match match in matches)
-                    {
-                        Result result = new Result();
-                        result.Source = Global.Source.UrlVoid;
-                        result.Info = "Blacklisted: " + match.Groups[1].Value;
-                        result.ParentUrl = url;
-                        result.Url = match.Groups[1].Value;
-                        result.Identified = true;
-
-                        results.Add(result);
-                    }
-
-                    if (results.Count > 0)
-                    {
-                        OnResultIdentified(results);
-                    }
-                    else
-                    {
-                        SendDefaultResult(Global.Source.UrlVoid,
-                                          url,
-                                          "No record");
-                    }
-                }
-                else
-                {
-                    if (_settings.UrlVoidPassive == false)
-                    {
-                        NameValueCollection nvc = new NameValueCollection();
-                        nvc.Add("url", data);
-                        nvc.Add("check", "Submit");
-                        wc.Headers.Add("Content-type", "application/x-www-form-urlencoded");
-                        byte[] tempPost = wc.UploadValues("http://urlvoid.com", "POST", nvc);
-                        string responsePost = Encoding.ASCII.GetString(tempPost);
-
-                        List<Result> results = new List<Result>();
-
-                        Regex regex = new Regex(@"DETECTED.{25,40}href\=\""(.{10,50})\""\stitle", RegexOptions.IgnoreCase);
-                        MatchCollection matches = regex.Matches(responsePost);
-                        foreach (Match match in matches)
-                        {
-                            Result result = new Result();
-                            result.Source = Global.Source.UrlVoid;
-                            result.Info = "Blacklisted: " + match.Groups[1].Value;
-                            result.ParentUrl = url;
-                            result.Url = match.Groups[1].Value;
-                            result.Identified = true;
-
-                            results.Add(result);
-                        }
-
-                        if (results.Count > 0)
-                        {
-                            OnResultIdentified(results);
-                        }
-                        else
-                        {
-                            SendDefaultResult(Global.Source.UrlVoid,
-                                          url,
-                                          "No record");
-                        }
-                    }
-                    else
-                    {
-                        SendDefaultResult(Global.Source.UrlVoid,
-                                      url,
-                                      "Not Blacklisted");
-
-                    }
-                }    
-            }
-            catch (Exception ex) 
-            {
-                SendDefaultResult(Global.Source.UrlVoid,
-                                  url,
-                                  "Error");
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="data"></param>
-        private void RunDns(string data)
+        private void Analyse(string[] dataTypes, Input input, string data)
         {
             try
             {
-                //if (_sources.Has(Global.Source.D) == false)
-                //{
-                //    return;
-                //}
-
-               // OnMessage("Analysing via " + Global.Source.Dn.GetEnumDescription());
-
-                //Resolver resolver = new Resolver("8.8.8.8");
-                //Response response = resolver.Query(data, QType.A);
-                //foreach (var a in response.Answers)
-                //{
-
-                //}
-            }
-            catch (Exception) { }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="data"></param>
-        private void RunRobTex(string data)
-        {
-            string url = "http://pop.robtex.com/" + data + ".html";
-
-            try
-            {
-                if (_sources.Has(Global.Source.Robtex) == false)
+                if (input.Enabled == false)
                 {
                     return;
                 }
 
-                OnMessage("Analysing via " + Global.Source.Robtex.GetEnumDescription());
-
-                GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download(url, _retries);
-                if (wcr.IsError == true)
+                foreach (var d in input.DataTypes)
+                foreach (var dt in dataTypes)
                 {
-                    if (wcr.Response == HttpStatusCode.NotFound.ToString())
-                    {
-                        SendDefaultResult(Global.Source.Robtex,
-                                          url,
-                                          "No record");
-                    }
-                    else
-                    {
-                        SendDefaultResult(Global.Source.Robtex,
-                                          url,
-                                          "Error: " + wcr.Response);
-
-                    }
-
-                    return;
-                }
-
-                List<Result> results = new List<Result>();
-
-                // Remove all of the extra text, just get to the A record stuff to minimise erronous domains
-                string temp = wcr.Response;
-                int index = temp.IndexOf("span id=\"sharedha\">Host names sharing IP with A records", StringComparison.InvariantCultureIgnoreCase);
-                if (index > -1)
-                {
-                    temp = temp.Substring(index);
-                }
-                else
-                {
-                    SendDefaultResult(Global.Source.Robtex,
-                                      url,
-                                      "No A records");
-                    return;
-                }
-
-                //Regex regex = new Regex(@"<a href="".*#shared""\s?>(.*)</a>", RegexOptions.IgnoreCase);
-                Regex regex = new Regex(@"(dns|host)\.robtex\.com.+\s>(.*)\<\/a\>", RegexOptions.IgnoreCase);
-                MatchCollection matches = regex.Matches(temp);
-                foreach (Match match in matches)
-                {
-                    // Ensure that we haven't already added it as the regex is not great
-                    var check = (from r in results where r.Info == ("A Record: " + match.Groups[2].Value) select r).SingleOrDefault();
-                    if (check != null)
+                    if (d.ToLower() != dt.ToLower())
                     {
                         continue;
                     }
 
-                    Result result = new Result();
-                    result.Source = Global.Source.Robtex;
-                    result.Info = "A Record: " + match.Groups[2].Value;
-                    result.ParentUrl = url;
-                    result.Url = "http://robtex.com/" + match.Groups[2].Value + ".html";
-                    result.Identified = true;
-
-                    results.Add(result);
-                }
-
-                if (results.Count > 0)
-                {
-                    OnResultIdentified(results);
-                }
-                else
-                {
-                    SendDefaultResult(Global.Source.Robtex,
-                                      url,
-                                      "No A records");
-                }
-            }
-            catch (Exception ex)
-            {
-                SendDefaultResult(Global.Source.Robtex,
-                                  url,
-                                  "Error");
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="data"></param>
-        private void RunFortiguard(string data)
-        {
-            string url = "http://www.fortiguard.com/ip_rep/index.php?data=" + data + "&lookup=Lookup";
-
-            try
-            {
-                if (_sources.Has(Global.Source.Fortiguard) == false)
-                {
-                    return;
-                }
-
-                OnMessage("Analysing via " + Global.Source.Fortiguard.GetEnumDescription());
-
-                GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download(url, _retries);
-                if (wcr.IsError == true)
-                {
-                    SendDefaultResult(Global.Source.Fortiguard,
-                                      url,
-                                      "Error: " + wcr.Response);
-                    return;
-                }
-
-                Regex regex = new Regex(@"Category:\s(.+)\<\/h3\>\s\<a", RegexOptions.IgnoreCase);
-                Match match = regex.Match(wcr.Response);
-                if (match.Success == true)
-                {
-                    Result result = new Result();
-                    result.Source = Global.Source.Fortiguard;
-                    result.Info = "Classification: " + match.Groups[1].Value;
-                    result.ParentUrl = url;
-                    result.Url = url;
-
-                    if (match.Groups[1].Value.ToLower() != "unclassified")
+                    // DNS is a special case since it needs to use the .Net 
+                    // DNS system objects rather than the WebClient
+                    if (input.Name.ToLower() == "dns")
                     {
-                        result.Identified = true;
-                    }
-
-                    OnResultIdentified(new List<Result> { result });
-                }
-                else
-                {
-                    SendDefaultResult(Global.Source.Fortiguard,
-                                      url,
-                                      "No record");
-                }
-            }
-            catch (Exception ex) 
-            {
-                SendDefaultResult(Global.Source.Fortiguard,
-                                  url,
-                                  "Error");
-            }
-        }
-
-        /// <summary>
-        /// http://www.alienvault.com/apps/rep_monitor/ip/213.186.33.19
-        /// </summary>
-        /// <param name="data"></param>
-        private void RunAlienVault(string data)
-        {
-            string url = "http://www.alienvault.com/apps/rep_monitor/ip/" + data;
-
-            try
-            {
-                if (_sources.Has(Global.Source.AlienVault) == false)
-                {
-                    return;
-                }
-
-                OnMessage("Analysing via " + Global.Source.AlienVault.GetEnumDescription());
-
-                GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download(url, _retries);
-                if (wcr.IsError == true)
-                {
-                    SendDefaultResult(Global.Source.AlienVault,
-                                      url,
-                                      "Error: " + wcr.Response);
-                    return;
-                }
-                Regex regex = new Regex("IP Address Can Not be Located", RegexOptions.IgnoreCase);
-                Match match = regex.Match(wcr.Response);
-                if (match.Success == false)
-                {
-                    Result result = new Result();
-                    result.Source = Global.Source.AlienVault;
-                    result.Info = "Identified: " + data;
-                    result.ParentUrl = url;
-                    result.Url = url;
-                    result.Identified = true;
-
-                    OnResultIdentified(new List<Result> { result });
-                }
-                else
-                {
-                    SendDefaultResult(Global.Source.AlienVault,
-                                      url,
-                                      "No record");
-                }
-            }
-            catch (Exception ex) 
-            {
-                SendDefaultResult(Global.Source.AlienVault,
-                                  url,
-                                  "Error");
-            }
-        }
-
-        /// <summary>
-        /// http://www.malwaredomainlist.com/mdl.php?search=freefblikes.net&colsearch=All&quantity=50
-        /// </summary>
-        /// <param name="data"></param>
-        private void RunMalwareDomainList(string data)
-        {
-            string url = "http://www.malwaredomainlist.com/mdl.php?search=" + data + "&colsearch=All&quantity=50";
-
-            try
-            {
-                if (_sources.Has(Global.Source.MalwareDomainlist) == false)
-                {
-                    return;
-                }
-
-                OnMessage("Analysing via " + Global.Source.MalwareDomainlist.GetEnumDescription());
-
-                GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download(url, _retries);
-                if (wcr.IsError == true)
-                {
-                    SendDefaultResult(Global.Source.MalwareDomainlist,
-                                      url,
-                                      "Error: " + wcr.Response);
-                    return;
-                }
-
-                List<Result> results = new List<Result>();
-
-                Regex regex = new Regex(@"<td><nobr>\d\d\d\d/\d\d/\d\d_\d\d:\d\d</nobr></td><td>.*</td><td>\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b</td><td>.*</td><td>(.*)</td><td>(.*)<wbr>.*</td><td>.*</td><td align="".*""><img src="".*"" class="".*"" alt="".*"" title="".*""/></td></tr>", RegexOptions.IgnoreCase);
-                MatchCollection matches = regex.Matches(wcr.Response);
-                foreach (Match match in matches)
-                {
-                    Result result = new Result();
-                    result.Source = Global.Source.MalwareDomainlist;
-                    result.Info = "Malware: " + match.Groups[1].Value + "#Registrant: " + match.Groups[2].Value;
-                    result.ParentUrl = url;
-                    result.Url = url;
-                    result.Identified = true;
-
-                    results.Add(result);
-                }
-
-                if (results.Count > 0)
-                {
-                    OnResultIdentified(results);
-                }
-                else
-                {
-                    SendDefaultResult(Global.Source.MalwareDomainlist,
-                                      url, 
-                                      "No record");
-                }
-            }
-            catch (Exception ex) 
-            {
-                SendDefaultResult(Global.Source.MalwareDomainlist,
-                                  url,
-                                  "Error");
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="data"></param>
-        private void RunBfk(string data)
-        {
-            string url = "http://www.bfk.de/bfk_dnslogger.html?query=" + data;
-
-            try
-            {
-                if (_sources.Has(Global.Source.Bfk) == false)
-                {
-                    return;
-                }
-
-                OnMessage("Analysing via " + Global.Source.Bfk.GetEnumDescription());
-
-                GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download(url, _retries);
-                if (wcr.IsError == true)
-                {
-                    SendDefaultResult(Global.Source.Bfk,
-                                      url,
-                                      "Error: " + wcr.Response);
-                    return;
-                }
-
-                List<Result> results = new List<Result>();
-
-                Regex regex = new Regex(@"<a href=""(.*?)#result"" rel=""nofollow"">(.*?)</a>", RegexOptions.IgnoreCase);
-                MatchCollection matches = regex.Matches(wcr.Response);
-                foreach (Match match in matches)
-                {
-                    // Ensure that we haven't already added it 
-                    var check = (from r in results where r.Info == ("Result: " + match.Groups[2].Value) select r).SingleOrDefault();
-                    if (check != null)
-                    {
+                        PerformDns(input, data);
                         continue;
                     }
 
-                    Result result = new Result();
-                    result.Source = Global.Source.Bfk;
-                    result.Info = "Result: " + match.Groups[2].Value;
-                    result.ParentUrl = url;
-                    result.Url = match.Groups[1].Value;
-                    result.Identified = true;
+                    PerformAnalysis(input, data);
+                }
+            }
+            finally
+            {
+                this.cde.Signal();
+            }
+            
+        }
 
-                    results.Add(result);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="data"></param>
+        private void PerformAnalysis(Input i, string data)
+        {
+            var tempUrl = i.FullUrl;
+            string response = string.Empty;
+            try
+            {
+                OnMessage("Analysing via " + i.Name);                
+                
+                if (tempUrl.Contains("#DATA#"))
+                {
+                    tempUrl = tempUrl.Replace("#DATA#", data);
                 }
 
-                if (results.Count > 0)
+                foreach (var ak in this.ApiKeys.Data)
                 {
-                    OnResultIdentified(results);
+                    if (tempUrl.Contains(ak.Marker))
+                    {
+                        tempUrl = tempUrl.Replace(ak.Marker, ak.Value);
+                    }
+                }
+
+                string httpBody = i.HttpBody;
+                if (httpBody.Contains("#DATA#"))
+                {
+                    httpBody = httpBody.Replace("#DATA#", data);
+                }
+
+                foreach (var ak in this.ApiKeys.Data)
+                {
+                    if (httpBody.Contains(ak.Marker))
+                    {
+                        httpBody = httpBody.Replace(ak.Marker, ak.Value);
+                    }
+                }
+
+                GZipWebClient wc = new GZipWebClient();
+                WebClientResult wcr = null;
+                if (i.HttpMethod == "POST")
+                {                    
+                    wcr = wc.Post(tempUrl, _retries, i.HttpHeaders, httpBody);
                 }
                 else
-                {
-                    SendDefaultResult(Global.Source.Bfk,
-                                      url,
-                                      "No record");
+                {                   
+                    wcr = wc.Download(tempUrl, _retries, i.HttpHeaders);                    
                 }
+
+                if (wcr.IsError == true)
+                {
+                    SendDefaultResult(i.Name,
+                                      i.Url,
+                                      tempUrl,
+                                      wcr.Response,
+                                      "Error: " + wcr.Response);
+                    return;
+                }
+
+                response = wcr.Response;
+                if (i.StripNewLines == true)
+                {
+                    response = wcr.Response.Replace("\n", "");
+                    response = response.Replace("\r", "");
+                }
+
+                Result result = ProcessResults(i, response, i.Url, tempUrl);
+                if (result == null)
+                {
+                    SendDefaultResult(i.Name, i.Url, tempUrl, response, "Not Found");
+                    return;
+                }
+
+                List<Result> results = new List<Result>() { result };
+                OnResultIdentified(results);
+                return;
             }
             catch (Exception ex)
             {
-                SendDefaultResult(Global.Source.Bfk,
-                                  url,
-                                  "Error");
+                SendDefaultResult(i.Name, i.Url, tempUrl, response, "Error: " + ex.Message);
             }
         }
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="data"></param>
-        private void RunVirusTotalDns(string data)
+        /// <param name="i"></param>
+        /// <param name="response"></param>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        private Result ProcessResults(Input i, string response, string url, string fullUrl)
         {
-            string url = "https://www.virustotal.com/en/ip-address/" + data + "/information/";
+            bool hasMatches = false;
+            List<string> temp = new List<string>();
+            Regex reg;
 
-            try
-            {
-                if (_sources.Has(Global.Source.VirusTotalDns) == false)
+            Result result = new Result();
+            result.Source = i.Name;
+            result.Identified = true;
+            result.Url = url;
+            result.FullUrl = fullUrl;
+            result.Response = response;
+
+            if (i.MultipleMatchRegex.Length > 0)
+            {                
+                reg = new Regex(i.MultipleMatchRegex);               
+                MatchCollection mc = reg.Matches(response);
+                if (mc.Count == 0)
                 {
-                    return;
+                    return null;
                 }
 
-                OnMessage("Analysing via " + Global.Source.VirusTotalDns.GetEnumDescription());
+                hasMatches = true;
 
-                GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download(url, _retries);
-                if (wcr.IsError == true)
+                bool first = true;
+                List<string> tempExtended = new List<string>();
+                string[] groupNames = reg.GetGroupNames();
+                foreach (Match m in mc)
                 {
-                    SendDefaultResult(Global.Source.VirusTotalDns,
-                                      url,
-                                      "Error: " + wcr.Response);
-                    return;
-                }
+                    temp = new List<string>();
+                    foreach (string gn in groupNames)
+                    {           
+                        if (gn == "0")
+                        {
+                            continue;
+                        }
 
-                Regex regex = new Regex("Unknown IP!", RegexOptions.IgnoreCase);
-                Match matchUnknown = regex.Match(wcr.Response);
-                if (matchUnknown.Success == true)
-                {
-                    SendDefaultResult(Global.Source.VirusTotalDns,
-                                      url,
-                                      "No record");
-                    return;
+                        temp.Add(gn + ": " + ScrubHtml(m.Groups[gn].Value.Trim()));                            
+                    }
+
+                    tempExtended.Add(string.Join(", ", temp));
+
+                    if (first == true)
+                    {
+                        result.Info = string.Join(", ", temp);
+                        first = false;
+                    }
                 }
                 
-                List<Result> results = new List<Result>();
-
-                regex = new Regex(@" <a target=""_blank"" href=""/en/domain/(.*)"">(.*)</a>", RegexOptions.IgnoreCase);
-                MatchCollection matches = regex.Matches(wcr.Response);
-                foreach (Match match in matches)
-                {
-                    Result result = new Result();
-                    result.Source = Global.Source.VirusTotalDns;
-                    result.Info = "Result: " + match.Groups[2].Value;
-                    result.ParentUrl = url;
-                    result.Url = "https://www.virustotal.com/en/domain/" + match.Groups[1].Value + "/information/";
-                    result.Identified = true;
-
-                    results.Add(result);
-                }
-
-                if (results.Count > 0)
-                {
-                    OnResultIdentified(results);
-                }
-                else
-                {
-                    SendDefaultResult(Global.Source.VirusTotalDns,
-                                      url,
-                                      "No records");
-                }
+                result.ExtendedInfo = string.Join(Environment.NewLine, tempExtended);
+                result.HasExtended = true;
             }
-            catch (Exception ex)
+            else
             {
-                SendDefaultResult(Global.Source.VirusTotalDns,
-                                  url,
-                                  "Error");
-            }
-        }
-
-        /// <summary>
-        /// http://hosts-file.net/default.asp?s=00cf9556.linkbucks.com
-        /// </summary>
-        /// <param name="data"></param>
-        private void RunHpHosts(string data)
-        {
-            return;
-            string url = "http://hosts-file.net/default.asp?s=" + data;
-
-            try
-            {
-                if (_sources.Has(Global.Source.HpHosts) == false)
+                for (int index = 0; index < i.Regexes.Count; index++)
                 {
-                    return;
-                }
+                    reg = new Regex(i.Regexes[index]);
 
-                OnMessage("Analysing via " + Global.Source.HpHosts.GetEnumDescription());
-
-                GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download(url, _retries);
-                if (wcr.IsError == true)
-                {
-                    SendDefaultResult(Global.Source.HpHosts,
-                                      url,
-                                      "Error: " + wcr.Response);
-                    return;
-                }
-
-                Regex regex = new Regex("This site is NOT currently listed in hpHosts", RegexOptions.IgnoreCase);
-                Match match = regex.Match(wcr.Response);
-                if (match.Success == true)
-                {
-                    SendDefaultResult(Global.Source.HpHosts,
-                                      url,
-                                      "No record");
-                    return;
-                }
-
-                Result result = new Result();
-                result.Source = Global.Source.HpHosts;
-                result.Info = "Result: " + match.Groups[2].Value;
-                result.ParentUrl = url;
-                result.Url = url;
-                result.Identified = true;
-
-                List<Result> results = new List<Result>() { result };
-
-                OnResultIdentified(results);
-            }
-            catch (Exception ex)
-            {
-                SendDefaultResult(Global.Source.HpHosts,
-                                  url,
-                                  "Error");
-            }
-        }
-
-        /// <summary>
-        /// IP
-        /// </summary>
-        /// <param name="data"></param>
-        private void RunHurricaneElectric(string data)
-        {
-            return;
-            string url = "http://bgp.he.net/ip/" + data;
-
-            try
-            {
-                if (_sources.Has(Global.Source.HurricaneElectric) == false)
-                {
-                    return;
-                }
-
-                OnMessage("Analysing via " + Global.Source.HurricaneElectric.GetEnumDescription());
-
-                GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download(url, _retries);
-                if (wcr.IsError == true)
-                {
-                    SendDefaultResult(Global.Source.HurricaneElectric,
-                                      url,
-                                      "Error: " + wcr.Response);
-                    return;
-                }
-
-                Regex regex = new Regex("did not return any results", RegexOptions.IgnoreCase);
-                Match match = regex.Match(wcr.Response);
-                if (match.Success == true)
-                {
-                    SendDefaultResult(Global.Source.HurricaneElectric,
-                                      url,
-                                      "No record");
-                    return;
-                }
-
-                Result result = new Result();
-                result.Source = Global.Source.HurricaneElectric;
-                result.Info = "Result: " + match.Groups[2].Value;
-                result.ParentUrl = url;
-                result.Url = url;
-                result.Identified = true;
-
-                List<Result> results = new List<Result>() { result };
-
-                OnResultIdentified(results);
-            }
-            catch (Exception ex)
-            {
-                SendDefaultResult(Global.Source.HurricaneElectric,
-                                  url,
-                                  "Error");
-            }
-        }         
-        #endregion
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="data"></param>
-        private void RunGoogleDiagnostic(string data)
-        {
-            string url = "http://www.google.com/safebrowsing/diagnostic?site=" + data;
-
-            try
-            {
-                if (_sources.Has(Global.Source.GoogleDiagnostics) == false)
-                {
-                    return;
-                }
-
-                OnMessage("Analysing via " + Global.Source.GoogleDiagnostics.GetEnumDescription());
-
-                GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download(url, _retries);
-                if (wcr.IsError == true)
-                {
-                    SendDefaultResult(Global.Source.GoogleDiagnostics,
-                                      url,
-                                      "Error: " + wcr.Response);
-                    return;
-                }
-
-                Regex regex1 = new Regex("This site is not currently listed as suspicious", RegexOptions.IgnoreCase);
-                Match match1 = regex1.Match(wcr.Response);
-                if (match1.Success == false)
-                {
-                    Regex regex2 = new Regex("No, this site has not hosted malicious software over the past 90 days", RegexOptions.IgnoreCase);
-                    Match match2 = regex2.Match(wcr.Response);
-                    if (match2.Success == false)
+                    Match m = reg.Match(response);
+                    if (m.Success == true)
                     {
-                        SendDefaultResult(Global.Source.GoogleDiagnostics,
-                                      url,
-                                      "No record: " + data);
-                        return;
+                        if (i.Results[index].Length == 0)
+                        {
+                            temp.Add("Found");
+                        }
+                        else
+                        {
+                            temp.Add(i.Results[index] + ": " + m.Groups[1].Value);
+                        }
+
+                        hasMatches = true;
                     }
                 }
 
+                result.Info = string.Join(", ", temp);
+                result.ExtendedInfo = string.Join(", ", temp);
+            }
+            
+            if (hasMatches == false)
+            {
+                return null;
+            }          
+
+            if (i.LinkRegex.Length > 0)
+            {
+                reg = new Regex(i.LinkRegex);
+                Match m = reg.Match(response);
+                if (m.Success == true)
+                {
+                    result.Url = m.Groups[1].Value;
+                }
+                else
+                {
+                    result.Url = url;
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="data"></param>
+        private void PerformDns(Input i, string data)
+        {
+            try
+            {
+                OnMessage("Analysing via " + i.Name);
+
+                var hostName = Dns.GetHostEntry(data).HostName;
+                if (hostName.Length == 0)
+                {
+                    SendDefaultResult(i.Name, "N/A", "N/A", "", "Not Found");
+                    return;
+                }
+
                 Result result = new Result();
-                result.Source = Global.Source.GoogleDiagnostics;
-                result.Info = "Result: " + data;
-                result.ParentUrl = url + data;
-                result.Url = url + data;
+                result.Source = i.Name;
                 result.Identified = true;
-
+                result.Info = hostName;
+                result.FullUrl = "N/A";
+                result.Url = "N/A";
+          
                 List<Result> results = new List<Result>() { result };
-
                 OnResultIdentified(results);
+                return;
             }
             catch (Exception ex)
             {
-                SendDefaultResult(Global.Source.GoogleDiagnostics,
-                                  url,
-                                  "Error");
-            }
-        }  
-
-        #region Hash Provider Methods
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="data"></param>
-        private void RunThreatExpert(string data)
-        {
-            string url = "http://www.threatexpert.com/report.aspx?md5=" + data;
-
-            try
-            {
-                if (_sources.Has(Global.Source.ThreatExpert) == false)
-                {
-                    return;
-                }
-
-                GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download(url, _retries);
-                if (wcr.IsError == true)
-                {
-                    SendDefaultResult(Global.Source.ThreatExpert, url, "Error: " + wcr.Response);
-                    return;
-                }
-
-                Regex regex = new Regex(@"<title>ThreatExpert Report:\s+(.*)</title>", RegexOptions.IgnoreCase);
-                Match match = regex.Match(wcr.Response);
-                if (match.Success == true)
-                {
-                    Result result = new Result();
-                    result.Source = Global.Source.ThreatExpert;
-                    result.Info = "Malware: " + match.Groups[1].Value;
-                    result.ParentUrl = url;
-                    result.Url = url;
-
-                    OnResultIdentified(new List<Result> { result });
-                }
-                else
-                {
-                    SendDefaultResult(Global.Source.ThreatExpert, url, "No record");
-                }
-            }
-            catch (Exception ex)
-            {
-                SendDefaultResult(Global.Source.ThreatExpert, url, "Error");
+                SendDefaultResult(i.Name, "N/A", "N/A", "", "Error: " + ex.Message);
             }
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="data"></param>
-        private void RunVxVault(string data)
-        {
-            string url = "http://vxvault.siri-urz.net/ViriList.php?MD5=" + data;
-
-            try
-            {
-                if (_sources.Has(Global.Source.VxVault) == false)
-                {
-                    return;
-                }
-
-                GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download(url, _retries);
-                if (wcr.IsError == true)
-                {
-                    SendDefaultResult(Global.Source.VxVault, url, "Error: " + wcr.Response);
-                    return;
-                }
-
-                List<Result> results = new List<Result>();
-
-                Regex regex = new Regex(@"<a class=jaune href='virifiche.php\?ID=(\d*)'>\d\d\d\d-\d\d-\d\d</a></TD>", RegexOptions.IgnoreCase);
-                MatchCollection matches = regex.Matches(wcr.Response);
-                foreach (Match match in matches)
-                {
-                    Result result = new Result();
-                    result.Source = Global.Source.VxVault;
-                    result.Info = "Malware: " + match.Groups[1].Value;
-                    result.ParentUrl = url;
-                    result.Url = "http://vxvault.siri-urz.net/ViriFiche.php?ID=" + match.Groups[1].Value;
-
-                    OnResultIdentified(new List<Result> { result });
-                }
-
-                if (results.Count > 0)
-                {
-                    OnResultIdentified(results);
-                }
-                else
-                {
-                    SendDefaultResult(Global.Source.VxVault, url, "No record");
-                }
-            }
-            catch (Exception ex)
-            {
-                SendDefaultResult(Global.Source.VxVault, url, "Error");
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="data"></param>
-        private void RunMinotaurAnalysis(string data)
-        {
-            string url = "http://minotauranalysis.com/search.aspx?q=" + data;
-
-            try
-            {
-                if (_sources.Has(Global.Source.MinotaurAnalysis) == false)
-                {
-                    return;
-                }
-
-                GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download(url, _retries);
-                if (wcr.IsError == true)
-                {
-                    SendDefaultResult(Global.Source.MinotaurAnalysis, url, "Error: " + wcr.Response);
-                    return;
-                }
-
-                List<Result> results = new List<Result>();
-
-                Regex regex = new Regex(@"No sample found matching the MD5", RegexOptions.IgnoreCase);
-                Match match = regex.Match(wcr.Response);
-                if (match.Success == false)
-                {
-                    Result result = new Result();
-                    result.Source = Global.Source.MinotaurAnalysis;
-                    result.Info = "Malware: " + data;
-                    result.ParentUrl = url;
-                    result.Url = url;
-
-                    OnResultIdentified(new List<Result> { result });
-                }
-                else
-                {
-                    SendDefaultResult(Global.Source.MinotaurAnalysis, url, "No record");
-                }
-            }
-            catch (Exception ex)
-            {
-                SendDefaultResult(Global.Source.MinotaurAnalysis, url, "Error");
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="data"></param>
-        private void RunVirusTotal(string data)
-        {
-            string url = "https://www.virustotal.com/latest-scan/" + data;
-
-            try
-            {
-                if (_sources.Has(Global.Source.VirusTotalHash) == false)
-                {
-                    return;
-                }
-
-                GZipWebClient wc = new GZipWebClient();
-                WebClientResult wcr = wc.Download(url, _retries);
-                if (wcr.IsError == true)
-                {
-                    SendDefaultResult(Global.Source.VirusTotalHash, url, "Error: " + wcr.Response);
-                    return;
-                }
-                List<Result> results = new List<Result>();
-
-                Regex regex = new Regex(@"(\d+\s/\s\d+)", RegexOptions.IgnoreCase);
-                Match match = regex.Match(wcr.Response);
-                if (match.Success == true)
-                {
-                    Result result = new Result();
-                    result.Source = Global.Source.VirusTotalHash;
-                    result.Info = "Detection Ratio: " + match.Groups[1].Value;
-                    result.ParentUrl = url;
-                    result.Url = url;
-
-                    OnResultIdentified(new List<Result> { result });
-                }
-                else
-                {
-                    SendDefaultResult(Global.Source.VirusTotalHash, url, "No record");
-                }
-
-                if (this.InputMode == Global.InputMode.List)
-                {
-                    Thread.Sleep(new TimeSpan(0, 0, 10));
-                }
-            }
-            catch (Exception ex)
-            {
-                SendDefaultResult(Global.Source.VirusTotalHash, url, "Error");
-            }
-        }
-        #endregion
 
         #region Misc Methods
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private string ScrubHtml(string value)
+        {
+            var step1 = Regex.Replace(value, @"<[^>]+>|&nbsp;", "").Trim();
+            var step2 = Regex.Replace(step1, @"\s{2,}", " ");
+            return step2;
+        }
+        
         /// <summary>
         /// 
         /// </summary>
@@ -1229,15 +348,18 @@ namespace TargetAnalyser
         /// <param name="url"></param>
         /// <param name="message"></param>
         /// <param name="identified"></param>
-        private void SendDefaultResult(Global.Source source, 
-                                       string url, 
+        private void SendDefaultResult(string source, 
+                                       string url,
+                                       string fullUrl,
+                                       string response,
                                        string message)
         {
             Result result = new Result();
             result.Source = source;
             result.Info = message;
-            result.ParentUrl = url;
+            result.FullUrl = fullUrl;
             result.Url = url;
+            result.Response = response;
 
             OnResultIdentified(new List<Result> { result });
         }
@@ -1250,11 +372,7 @@ namespace TargetAnalyser
         /// <param name="result"></param>
         private void OnResultIdentified(List<Result> result)
         {
-            var handler = ResultsIdentified;
-            if (handler != null)
-            {
-                handler(result);
-            }
+            ResultsIdentified?.Invoke(result);
         }
 
         /// <summary>
@@ -1263,11 +381,7 @@ namespace TargetAnalyser
         /// <param name="message"></param>
         private void OnMessage(string message)
         {
-            var handler = Message;
-            if (handler != null)
-            {
-                handler(message);
-            }
+            Message?.Invoke(message);
         }
 
         /// <summary>
@@ -1275,11 +389,7 @@ namespace TargetAnalyser
         /// </summary>
         private void OnComplete()
         {
-            var handler = Complete;
-            if (handler != null)
-            {
-                handler();
-            }
+            Complete?.Invoke();
         }
         #endregion
     }

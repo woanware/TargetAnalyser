@@ -7,22 +7,17 @@ TargetAnalyser is basically a rip off of [Automater](http://www.tekdefense.com/a
 
 The issue for me is that sometimes I want to look at the page that produced the output, so a UI provides an easy way to get all the info and yet still provide a quick method to open the page. I have also added a lot more OSINT.
 
+All of the input sources are controlled via the **Inputs.xml** file which is located in the application directory. An example of the configured inputs is shown in the **Inputs** screenshot below.
+
+The inputs use regular expressions to extract information from a HTTP response. There are various options that can be set for the input source; these options are detailed in the **configuration** document.
+
 ## Features ##
 
-- IP Void (IP)
-- URL Void (URL)
-- Robtex (A Records)
-- Fortiguard (IP/URL)
-- AlienVault (IP/URL)
-- Malware Domain List (IP/URL)
-- VxVault (Hash)
-- MinotaurAnalysis (Hash)
-- ThreatExpert (Hash)
-- VirusTotal (Hash)
-- BFK Passive DNS
-- VirusTotal (DNS)
-- HpHosts (IP/URL)
-- Hurricane Electric (IP)
+- Easy to add new sources
+- Supports IP, Domain, URL and MD5 lookups
+- File input data supported
+- Trivially open the web page for the data
+- Can show the HTTP response to fix regular expression issues
 
 ## Third party libraries ##
 
@@ -33,6 +28,18 @@ The issue for me is that sometimes I want to look at the page that produced the 
 - [VirusTotal.NET](https://github.com/woanware/VirusTotal.NET): Fork from https://github.com/Genbox/VirusTotal.NET
 - [Utility](http://www.woanware.co.uk): Misc functions (woanware)
 
+## Third Party
+
+- [Icons8](https://icons8.com): Icons 
+
 ## Requirements ##
 
 Microsoft .NET Framework v4.5 
+
+## Screenshots
+
+![Main](./Main.png)
+
+![Inputs](./Inputs.png)
+
+

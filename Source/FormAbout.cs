@@ -41,11 +41,12 @@ namespace TargetAnalyser
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void linkWeb_LinkClicked(object sender, System.EventArgs e)
+        private void linkWeb_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
+
             System.Diagnostics.Process process = new System.Diagnostics.Process();
             process.StartInfo.RedirectStandardOutput = false;
-            process.StartInfo.FileName = "http://" + linkWeb.Text;
+            process.StartInfo.FileName = "https://" + linkWeb.Text;
             process.StartInfo.UseShellExecute = true;
             process.Start();
         }
@@ -62,5 +63,7 @@ namespace TargetAnalyser
             this.DialogResult = DialogResult.OK;
         }
         #endregion
+
+        
     }
 }

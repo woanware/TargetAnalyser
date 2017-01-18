@@ -12,6 +12,21 @@
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -37,16 +52,6 @@
   <PropertyGroup>
     <ApplicationIcon>App.ico</ApplicationIcon>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugConsole|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\DebugConsole\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;CONSOLE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <PlatformTarget>x86</PlatformTarget>
     <OutputPath>bin\x86\Debug\</OutputPath>
@@ -57,44 +62,10 @@
     <OutputPath>bin\x86\Release\</OutputPath>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugConsole|x86'">
-    <PlatformTarget>x86</PlatformTarget>
-    <OutputPath>bin\x86\DebugConsole\</OutputPath>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugGUI|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\DebugGUI\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugGUI|x86'">
-    <OutputPath>bin\x86\DebugGUI\</OutputPath>
-    <PlatformTarget>x86</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseConsole|AnyCPU'">
-    <OutputPath>bin\ReleaseConsole\</OutputPath>
-    <DefineConstants>TRACE;CONSOLE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseConsole|x86'">
-    <OutputPath>bin\x86\ReleaseConsole\</OutputPath>
-    <PlatformTarget>x86</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
+  <PropertyGroup />
   <ItemGroup>
     <Reference Include="CommandLine">
       <HintPath>..\Dependencies\CommandLine\CommandLine.dll</HintPath>
@@ -132,11 +103,11 @@
     <Compile Include="FormAbout.Designer.cs">
       <DependentUpon>FormAbout.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormImport.cs">
+    <Compile Include="FormExtendedInfo.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormImport.Designer.cs">
-      <DependentUpon>FormImport.cs</DependentUpon>
+    <Compile Include="FormExtendedInfo.Designer.cs">
+      <DependentUpon>FormExtendedInfo.cs</DependentUpon>
     </Compile>
     <Compile Include="FormMain.cs">
       <SubType>Form</SubType>
@@ -150,28 +121,36 @@
     <Compile Include="FormOptions.Designer.cs">
       <DependentUpon>FormOptions.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormProviders.cs">
+    <Compile Include="FormInputs.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormProviders.Designer.cs">
-      <DependentUpon>FormProviders.cs</DependentUpon>
+    <Compile Include="FormInputs.Designer.cs">
+      <DependentUpon>FormInputs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormResponse.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormResponse.Designer.cs">
+      <DependentUpon>FormResponse.cs</DependentUpon>
     </Compile>
     <Compile Include="Functions.cs" />
     <Compile Include="Global.cs" />
     <Compile Include="GzipWebClient.cs" />
+    <Compile Include="ApiKey.cs" />
     <Compile Include="Input.cs" />
+    <Compile Include="ApiKeys.cs" />
+    <Compile Include="Inputs.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Output.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Provider.cs" />
     <Compile Include="Result.cs" />
     <Compile Include="Settings.cs" />
     <EmbeddedResource Include="FormAbout.resx">
       <DependentUpon>FormAbout.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FormImport.resx">
-      <DependentUpon>FormImport.cs</DependentUpon>
+    <EmbeddedResource Include="FormExtendedInfo.resx">
+      <DependentUpon>FormExtendedInfo.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormMain.resx">
       <DependentUpon>FormMain.cs</DependentUpon>
@@ -179,8 +158,11 @@
     <EmbeddedResource Include="FormOptions.resx">
       <DependentUpon>FormOptions.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FormProviders.resx">
-      <DependentUpon>FormProviders.cs</DependentUpon>
+    <EmbeddedResource Include="FormInputs.resx">
+      <DependentUpon>FormInputs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormResponse.resx">
+      <DependentUpon>FormResponse.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -204,6 +186,21 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.6.1 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="App.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

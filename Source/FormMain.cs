@@ -16,7 +16,9 @@ namespace TargetAnalyser
         #endregion
 
         #region Member Variables
-        private Settings _settings;
+        private Settings settings;
+        private Inputs inputs;
+        private ApiKeys apiKeys;
         private Analyser _analyser;
         private HourGlass _hourGlass;
         private int _retries = 3;
@@ -28,12 +30,7 @@ namespace TargetAnalyser
         /// </summary>
         public FormMain()
         {
-            InitializeComponent();
-
-            _analyser = new Analyser(VT_API_KEY, _retries);
-            _analyser.ResultsIdentified += OnAnalyser_Result;
-            _analyser.Complete += OnAnalyser_Complete;
-            _analyser.Message += OnAnalyser_Message;
+            InitializeComponent();           
 
             txtTarget.Select();
         }
@@ -53,6 +50,8 @@ namespace TargetAnalyser
                 {
                     olvcResult.AutoResize(ColumnHeaderAutoResizeStyle.ColumnContent);
                     olvcSource.AutoResize(ColumnHeaderAutoResizeStyle.ColumnContent);
+                    olvUrl2.AutoResize(ColumnHeaderAutoResizeStyle.ColumnContent);
+                    olvcUrl1.AutoResize(ColumnHeaderAutoResizeStyle.ColumnContent);
 
                     listResults.SelectedIndex = 0;
                 }
@@ -60,6 +59,8 @@ namespace TargetAnalyser
                 {
                     olvcResult.AutoResize(ColumnHeaderAutoResizeStyle.HeaderSize);
                     olvcSource.AutoResize(ColumnHeaderAutoResizeStyle.HeaderSize);
+                    olvUrl2.AutoResize(ColumnHeaderAutoResizeStyle.HeaderSize);
+                    olvcUrl1.AutoResize(ColumnHeaderAutoResizeStyle.HeaderSize);
                 }
 
                 UpdateStatusBar("Complete");
@@ -90,17 +91,7 @@ namespace TargetAnalyser
         /// <param name="results"></param>
         private void OnAnalyser_Result(List<Result> results)
         {
-            if (_analyser.InputMode == Global.InputMode.Single)
-            {
-                listResults.AddObjects(results);
-            }
-            else
-            {
-                if (results.First().Identified == true)
-                {
-                    string ret = Output.Process(results, Global.OutputMode.Csv, _analyser.OutputFile, false);
-                }
-            }
+            listResults.AddObjects(results);
         }
         #endregion
 
@@ -148,13 +139,19 @@ namespace TargetAnalyser
             switch (cboTargetType.SelectedIndex)
             {
                 case 0:
-                    _analyser.Analyse(_settings.Sources, Global.TargetType.Ip, txtTarget.Text, _settings);
+                    _analyser.Analyse(new string[] {"ip"}, txtTarget.Text);
                     break;
                 case 1:
-                    _analyser.Analyse(_settings.Sources, Global.TargetType.Domain, txtTarget.Text, _settings);
+                    _analyser.Analyse(new string[] {"domain"}, txtTarget.Text);
                     break;
                 case 2:
-                    _analyser.Analyse(_settings.Sources, Global.TargetType.Hash, txtTarget.Text, _settings);
+                    _analyser.Analyse(new string[] {"domain", "url"}, txtTarget.Text); 
+                    break;
+                case 3:
+                    _analyser.Analyse(new string[] {"url"}, txtTarget.Text);
+                    break;
+                case 4:
+                    _analyser.Analyse(new string[] {"md5"}, txtTarget.Text);
                     break;
             }
         }
@@ -168,33 +165,33 @@ namespace TargetAnalyser
         /// <param name="e"></param>
         private void FormMain_Load(object sender, EventArgs e)
         {
-            _settings = new Settings();
-            if (_settings.FileExists == true)
+            this.settings = new Settings();
+            if (this.settings.FileExists == true)
             {
-                string ret = _settings.Load();
+                string ret = this.settings.Load();
                 if (ret.Length > 0)
                 {
                     UserInterface.DisplayErrorMessageBox(this, ret);
                 }
                 else
                 {
-                    this.WindowState = _settings.FormState;
+                    this.WindowState = this.settings.FormState;
 
-                    if (_settings.FormState != FormWindowState.Maximized)
+                    if (this.settings.FormState != FormWindowState.Maximized)
                     {
-                        this.Location = _settings.FormLocation;
-                        this.Size = _settings.FormSize;
+                        this.Location = this.settings.FormLocation;
+                        this.Size = this.settings.FormSize;
                     }
                 }
-            }
-            else
-            {
-                // Add all providers initially
-                foreach (Global.Source source in Misc.EnumToList<Global.Source>())
-                {
-                    _settings.Sources = _settings.Sources.Include(source);
-                }
-            }
+            }            
+
+            _analyser = new Analyser(_retries);
+            _analyser.ResultsIdentified += OnAnalyser_Result;
+            _analyser.Complete += OnAnalyser_Complete;
+            _analyser.Message += OnAnalyser_Message;
+
+            LoadInputs();
+            LoadApiKeys();
 
             cboTargetType.SelectedIndex = 0;
         }
@@ -206,13 +203,19 @@ namespace TargetAnalyser
         /// <param name="e"></param>
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            _settings.FormLocation = base.Location;
-            _settings.FormSize = base.Size;
-            _settings.FormState = base.WindowState;
-            string ret = _settings.Save();
+            this.settings.FormLocation = base.Location;
+            this.settings.FormSize = base.Size;
+            this.settings.FormState = base.WindowState;
+            string ret = this.settings.Save();
             if (ret.Length > 0)
             {
-                UserInterface.DisplayErrorMessageBox(this, ret);
+                UserInterface.DisplayErrorMessageBox(this, "Error saving settings: " + ret);
+            }
+
+            ret = this.inputs.Save();
+            if (ret.Length > 0)
+            {
+                UserInterface.DisplayErrorMessageBox(this, "Error saving inputs files: " + ret);
             }
         }
 
@@ -246,7 +249,7 @@ namespace TargetAnalyser
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void contextShow_Click(object sender, EventArgs e)
+        private void contextGoToUrl1_Click(object sender, EventArgs e)
         {
             if (listResults.SelectedObjects.Count != 1)
             {
@@ -262,7 +265,7 @@ namespace TargetAnalyser
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void contextShowParent_Click(object sender, EventArgs e)
+        private void contextGoToUrl2_Click(object sender, EventArgs e)
         {
             if (listResults.SelectedObjects.Count != 1)
             {
@@ -270,7 +273,7 @@ namespace TargetAnalyser
             }
 
             Result result = (Result)listResults.SelectedObject;
-            Misc.ShellExecuteFile(result.ParentUrl);
+            Misc.ShellExecuteFile(result.FullUrl);
         }
 
         /// <summary>
@@ -289,6 +292,60 @@ namespace TargetAnalyser
             Clipboard.SetText(result.Info);
             UpdateStatusBar("Info copied to clipboard: " + result.Info);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void contextExtended_Click(object sender, EventArgs e)
+        {
+            if (listResults.SelectedObject == null)
+            {
+                return;
+            }
+
+            Result r = (Result)listResults.SelectedObject;
+            using (FormExtendedInfo f = new FormExtendedInfo(r.ExtendedInfo))
+            {
+                f.ShowDialog();
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void contextResponse_Click(object sender, EventArgs e)
+        {
+            if (listResults.SelectedObject == null)
+            {
+                return;
+            }
+
+            Result r = (Result)listResults.SelectedObject;
+            using (FormResponse f = new FormResponse(r.Response))
+            {
+                f.ShowDialog();
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void context_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (listResults.SelectedObjects.Count != 1)
+            {
+                contextExtended.Enabled = false;
+                return;
+            }
+
+            contextExtended.Enabled = true;
+        }
         #endregion
 
         #region Menu Event Handlers
@@ -299,14 +356,14 @@ namespace TargetAnalyser
         /// <param name="e"></param>
         private void menuToolsProviders_Click(object sender, EventArgs e)
         {
-            using (FormProviders form = new FormProviders(_settings.Sources))
+            using (FormInputs f = new FormInputs(this.inputs))
             {
-                if (form.ShowDialog(this) == DialogResult.Cancel)
+                if (f.ShowDialog(this) == DialogResult.Cancel)
                 {
                     return;
                 }
 
-                _settings.Sources = form.Sources;
+                this.inputs = f.Inputs;
             }
         }
 
@@ -407,21 +464,16 @@ namespace TargetAnalyser
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void menuFileImport_Click(object sender, EventArgs e)
+        private void menuToolsOptions_Click(object sender, EventArgs e)
         {
-            using (FormImport form = new FormImport())
+            using (FormOptions form = new FormOptions(this.settings))
             {
                 if (form.ShowDialog(this) == System.Windows.Forms.DialogResult.Cancel)
                 {
                     return;
                 }
 
-                // Output a blank header line for the output CSV
-                List<Result> results = new List<Result>();
-                string ret = Output.Process(results, Global.OutputMode.Csv, form.OutputFile, true);
-
-                _hourGlass = new HourGlass(this);
-                _analyser.Analyse(_settings.Sources, form.TargetType, form.ImportFile, form.OutputFile, _settings);
+                this.settings = form.Settings;
             }
         }
 
@@ -430,18 +482,75 @@ namespace TargetAnalyser
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void menuToolsOptions_Click(object sender, EventArgs e)
+        private void menuToolsReloadInputs_Click(object sender, EventArgs e)
         {
-            using (FormOptions form = new FormOptions(_settings))
-            {
-                if (form.ShowDialog(this) == System.Windows.Forms.DialogResult.Cancel)
-                {
-                    return;
-                }
+            LoadInputs();
+        }
+        #endregion
 
-                _settings = form.Settings;
+        #region Misc Methods
+        /// <summary>
+        /// 
+        /// </summary>
+        private void LoadInputs()
+        {
+            this.inputs = new Inputs();
+            if (this.inputs.FileExists == true)
+            {
+                string ret = this.inputs.Load();
+                if (ret.Length > 0)
+                {
+                    UserInterface.DisplayErrorMessageBox(this, "Error loading inputs file: " +  ret);
+                }
+            }
+
+            if (this._analyser != null)
+            {
+                this._analyser.Inputs = this.inputs;
             }
         }
-        #endregion 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void LoadApiKeys()
+        {
+            this.apiKeys = new ApiKeys();
+            if (apiKeys.FileExists == true)
+            {
+                string ret = this.apiKeys.Load();
+                if (ret.Length > 0)
+                {
+                    UserInterface.DisplayErrorMessageBox(this, "Error loading API key file: " + ret);
+                }
+            }
+
+            if (this._analyser != null)
+            {
+                this._analyser.ApiKeys = this.apiKeys;
+            }
+        }
+        #endregion
+
+        #region List Event Handlers
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void listResults_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (listResults.SelectedObject == null)
+            {
+                return;
+            }
+
+            Result r = (Result)listResults.SelectedObject;
+            using (FormExtendedInfo f = new FormExtendedInfo(r.ExtendedInfo))
+            {
+                f.ShowDialog();
+            }
+        }
+        #endregion
     }
 }

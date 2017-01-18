@@ -115,7 +115,7 @@ namespace TargetAnalyser
                                 {
                                     csvWriter.WriteField(result.Source);
                                     csvWriter.WriteField(result.Info);
-                                    csvWriter.WriteField(result.ParentUrl);
+                                    csvWriter.WriteField(result.FullUrl);
                                     csvWriter.WriteField(result.Url);
                                     csvWriter.NextRecord();
                                 }

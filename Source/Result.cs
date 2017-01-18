@@ -6,22 +6,14 @@
     public class Result
     {
         #region Member Variables
-        public Global.Source Source { get; set; }
-        public string Info { get; set; }
-        public string ParentUrl { get; set; }
-        public string Url { get; set; }
+        public string Source { get; set; } = string.Empty;
+        public string Info { get; set; } = string.Empty;
+        public string ExtendedInfo { get; set; } = string.Empty;
+        public string FullUrl { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
+        public string Response { get; set; } = string.Empty;
         public bool Identified { get; set; }
+        public bool HasExtended { get; set; }
         #endregion
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Result()
-        {
-            //Source = string.Empty;
-            Info = string.Empty;
-            ParentUrl = string.Empty;
-            Url = string.Empty;
-        }
     }
 }

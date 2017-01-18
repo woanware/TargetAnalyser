@@ -1,26 +1,22 @@
 ﻿using System;
-using System.Drawing;
+using System.Collections.Generic;
 using System.IO;
-using System.Windows.Forms;
 using System.Xml.Serialization;
 using woanware;
 
 namespace TargetAnalyser
 {
     /// <summary>
-    /// Allows us to save/load the configuration file to/from XML
+    /// 
     /// </summary>
-    public class Settings
+    public class ApiKeys
     {
         #region Constants
-        private const string FILENAME = "Settings.xml";
+        private const string FILENAME = "ApiKeys.xml";
         #endregion
 
-        #region Member Variables
-        public Point FormLocation { get; set; }
-        public Size FormSize { get; set; }
-        public FormWindowState FormState { get; set; }
-        public int Retries { get; set; } = 3;        
+        #region Properties/Variables
+        public List<ApiKey> Data = new List<ApiKey>();
         #endregion
 
         #region Public Methods
@@ -39,15 +35,13 @@ namespace TargetAnalyser
                     return string.Empty;
                 }
 
-                XmlSerializer serializer = new XmlSerializer(typeof(Settings));
+                XmlSerializer serializer = new XmlSerializer(typeof(ApiKeys));
 
                 FileInfo info = new FileInfo(path);
                 using (FileStream stream = info.OpenRead())
                 {
-                    Settings settings = (Settings)serializer.Deserialize(stream);
-                    FormLocation = settings.FormLocation;
-                    FormSize = settings.FormSize;
-                    FormState = settings.FormState;
+                    ApiKeys ak = (ApiKeys)serializer.Deserialize(stream);
+                    this.Data = ak.Data;             
                     return string.Empty;
                 }
             }
@@ -65,6 +59,11 @@ namespace TargetAnalyser
             }
             catch (Exception ex)
             {
+                if (ex.InnerException != null)
+                {
+                    return ex.InnerException.Message;
+                }
+
                 return ex.Message;
             }
         }
@@ -77,12 +76,7 @@ namespace TargetAnalyser
         {
             try
             {
-                if (System.IO.Directory.Exists(Misc.GetUserDataDirectory()) == false)
-                {
-                    IO.CreateDirectory(Misc.GetUserDataDirectory());
-                }
-
-                XmlSerializer serializer = new XmlSerializer(typeof(Settings));
+                XmlSerializer serializer = new XmlSerializer(typeof(ApiKeys));
                 using (StreamWriter writer = new StreamWriter(GetPath(), false))
                 {
                     serializer.Serialize((TextWriter)writer, this);
@@ -115,7 +109,7 @@ namespace TargetAnalyser
         /// <returns></returns>
         private string GetPath()
         {
-            return System.IO.Path.Combine(Misc.GetUserDataDirectory(), FILENAME);
+            return System.IO.Path.Combine(Misc.GetApplicationDirectory(), FILENAME);
         }
 
         /// <summary>
@@ -125,7 +119,6 @@ namespace TargetAnalyser
         {
             get
             {
-                //string path = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"woanware\" + Application.ProductName + @"\");
                 return File.Exists(GetPath());
             }
         }

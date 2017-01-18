@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
+using woanware;
 
 namespace TargetAnalyser
 {
@@ -56,7 +58,7 @@ namespace TargetAnalyser
         /// <param name="url"></param>
         /// <param name="retries"></param>
         /// <returns></returns>
-        public WebClientResult Download(string url, int retries)
+        public WebClientResult Download(string url, int retries, List<NameValue> httpHeaders)
         {
             string lastException = string.Empty;
             int counter = 0;
@@ -64,8 +66,73 @@ namespace TargetAnalyser
             {
                 try
                 {
+                    foreach (var nv in httpHeaders)
+                    {
+                        this.Headers[nv.Name] = nv.Value;
+                    }
 
                     string response = DownloadString(url);
+
+                    return new WebClientResult(response, false);
+                }
+                catch (WebException webEx)
+                {
+                    counter++;
+                    if (webEx.Response == null)
+                    {
+                        if (webEx.InnerException == null)
+                        {
+                            lastException = webEx.Message;
+                        }
+                        else
+                        {
+                            lastException = webEx.InnerException.Message;
+                        }
+                    }
+                    else
+                    {
+                        lastException = ((HttpWebResponse)webEx.Response).StatusCode.ToString();
+                        if (((HttpWebResponse)webEx.Response).StatusCode == HttpStatusCode.NotFound)
+                        {
+                            return new WebClientResult(lastException, true);
+                        }
+                    }                                        
+                }
+                catch (Exception ex)
+                {
+                    counter++;
+                    lastException = ex.Message;
+                }
+
+                if (counter == retries)
+                {
+                    break;
+                }
+            }
+
+            return new WebClientResult(lastException, true);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="retries"></param>
+        /// <returns></returns>
+        public WebClientResult Post(string url, int retries, List<NameValue> httpHeaders, string body)
+        {
+            string lastException = string.Empty;
+            int counter = 0;
+            while (true)
+            {
+                try
+                {
+                    foreach (var nv in httpHeaders)
+                    {
+                        this.Headers[nv.Name] = nv.Value;
+                    }                         
+
+                    string response = UploadString(url, body);
                     return new WebClientResult(response, false);
                 }
                 catch (WebException webEx)

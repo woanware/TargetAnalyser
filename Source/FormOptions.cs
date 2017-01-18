@@ -21,7 +21,7 @@ namespace TargetAnalyser
             InitializeComponent();
             _settings = settings;
 
-            chkUrlVoidPassive.Checked = _settings.UrlVoidPassive;
+            //chkUrlVoidPassive.Checked = _settings.UrlVoidPassive;
         }
         #endregion 
 
