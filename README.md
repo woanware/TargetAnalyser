@@ -20,6 +20,10 @@ The inputs use regular expressions to extract information from a HTTP response. 
 - Can show the HTTP response to fix regular expression issues
 - Has 20 defined input sources (as of v1.0.0 release)
 
+## API Keys 
+
+Each of the **inputs** can use an API key defined in the **ApiKeys.xml** file, located in the application directory. There are two initial defined VirusTotal (VT) and Google SafeBrowsing (GSB), so to use the VT and GSB functionality you need to register with the services and set the API key in the file
+
 ## Third party libraries ##
 
 - [CommandLine](https://github.com/gsscoder/commandline): Used for command line parsing
