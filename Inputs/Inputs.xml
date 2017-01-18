@@ -1,0 +1,513 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Inputs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Data>
+    <Input>
+      <Name>VirusTotal (MD5)</Name>
+      <Enabled>true</Enabled>
+      <Url>https://www.virustotal.com/vtapi/v2/file/report</Url>
+      <FullUrl>https://www.virustotal.com/vtapi/v2/file/report?resource=#DATA#&amp;apikey=#VT_API_KEY#</FullUrl>
+      <DataTypes>
+        <string>MD5</string>
+      </DataTypes>
+      <Regexes>
+        <string>\"response_code\":\s(.*?),</string>
+        <string>\"scan_date\":\s"(.*?)",</string>
+        <string>\"positives\":\s(.*?),</string>
+        <string>\"total\":\s(.*?),</string>
+        <string>\"result\":\s"(.*?)",</string>
+      </Regexes>
+      <Results>
+        <string>Response Code</string>
+        <string>Scan Date</string>
+        <string>Positives</string>
+        <string>Total</string>
+        <string>Result</string>
+      </Results>
+      <MultipleMatchRegex />
+      <LinkRegex>\"permalink\":\s"(.*?)",</LinkRegex>
+      <HttpMethod>GET</HttpMethod>
+      <HttpBody />
+      <HttpHeaders />
+      <StripNewLines>false</StripNewLines>
+    </Input>
+    <Input>
+      <Name>VirusTotal (IP)</Name>
+      <Enabled>true</Enabled>
+      <Url>https://www.virustotal.com/vtapi/v2/ip-address/report</Url>
+      <FullUrl>https://www.virustotal.com/vtapi/v2/ip-address/report?ip=#DATA#&amp;apikey=#VT_API_KEY#</FullUrl>
+      <DataTypes>
+        <string>IP</string>
+      </DataTypes>
+      <Regexes>
+        <string>\"asn\":\s"(.*?)",</string>
+        <string>\"country\":\s"(.*?)",</string>
+        <string>\"owner\":\s(.*?),</string>
+        <string>\"last_resolved\":\s"(.*?)",</string>
+        <string>\"date\":\s"(.*?)",</string>
+        <string>\"url\":\s"(.*?)",</string>
+      </Regexes>
+      <Results>
+        <string>ASN</string>
+        <string>Country</string>
+        <string>Owner</string>
+        <string>Last Resolved</string>
+        <string>Date</string>
+        <string>URL</string>
+      </Results>
+      <MultipleMatchRegex />
+      <LinkRegex>\"permalink\":\s"(.*?)",</LinkRegex>
+      <HttpMethod>GET</HttpMethod>
+      <HttpBody />
+      <HttpHeaders />
+      <StripNewLines>false</StripNewLines>
+    </Input>
+    <Input>
+      <Name>VirusTotal (DNS)</Name>
+      <Enabled>true</Enabled>
+      <Url>https://www.virustotal.com/vtapi/v2/domain/report</Url>
+      <FullUrl>https://www.virustotal.com/vtapi/v2/domain/report?domains=#DATA#&amp;apikey=#VT_API_KEY#</FullUrl>
+      <DataTypes>
+        <string>Domain</string>
+      </DataTypes>
+      <Regexes>
+        <string>\"response_code\":\s(.*?),</string>
+        <string>\"scan_date\":\s"(.*?)"</string>
+        <string>\"positives\":\s(.*?),</string>
+        <string>\"total\":\s(.*?),</string>
+        <string>\"last_resolved\":\s"(.*?)",</string>
+      </Regexes>
+      <Results>
+        <string>Response Code</string>
+        <string>Scan Date</string>
+        <string>Positives</string>
+        <string>Total</string>
+        <string>Last Resolved</string>
+      </Results>
+      <MultipleMatchRegex />
+      <LinkRegex />
+      <HttpMethod>GET</HttpMethod>
+      <HttpBody />
+      <HttpHeaders />
+      <StripNewLines>false</StripNewLines>
+    </Input>
+    <Input>
+      <Name>VirusTotal (URL)</Name>
+      <Enabled>true</Enabled>
+      <Url>https://www.virustotal.com/vtapi/v2/url/report</Url>
+      <FullUrl>https://www.virustotal.com/vtapi/v2/url/report?resource=#DATA#&amp;apikey=#VT_API_KEY#</FullUrl>
+      <DataTypes>
+        <string>Domain</string>
+      </DataTypes>
+      <Regexes>
+        <string>\"response_code\":\s(.*?),</string>
+        <string>\"scan_date\":\s"(.*?)",</string>
+        <string>\"positives\":\s(.*?),</string>
+        <string>\"total\":\s(.*?),</string>
+      </Regexes>
+      <Results>
+        <string>Response Code</string>
+        <string>Scan Date</string>
+        <string>Positives</string>
+        <string>Total</string>
+      </Results>
+      <MultipleMatchRegex />
+      <LinkRegex>\"permalink\":\s"(.*?)",</LinkRegex>
+      <HttpMethod>GET</HttpMethod>
+      <HttpBody />
+      <HttpHeaders />
+      <StripNewLines>false</StripNewLines>
+    </Input>
+    <Input>
+      <Name>Fortiguard</Name>
+      <Enabled>true</Enabled>
+      <Url>https://www.fortiguard.com</Url>
+      <FullUrl>https://www.fortiguard.com/iprep?data=#DATA#</FullUrl>
+      <DataTypes>
+        <string>IP</string>
+        <string>Domain</string>
+      </DataTypes>
+      <Regexes>
+        <string>Category:\s(.*?)&lt;</string>
+      </Regexes>
+      <Results>
+        <string>Category</string>
+      </Results>
+      <MultipleMatchRegex />
+      <LinkRegex />
+      <HttpMethod>GET</HttpMethod>
+      <HttpBody />
+      <HttpHeaders />
+      <StripNewLines>false</StripNewLines>
+    </Input>
+    <Input>
+      <Name>IP Void</Name>
+      <Enabled>true</Enabled>
+      <Url>http://www.ipvoid.com/ip-blacklist-check/</Url>
+      <FullUrl>http://www.ipvoid.com/ip-blacklist-check/</FullUrl>
+      <DataTypes>
+        <string>IP</string>
+      </DataTypes>
+      <Regexes>
+        <string>Blacklist Status&lt;\/td&gt;&lt;td&gt;&lt;span\sclass=\"label\slabel-.*?\"&gt;(.*?)&lt;/span&gt;</string>
+        <string>ISP&lt;\/td&gt;&lt;td&gt;(.*?)&lt;\/td&gt;</string>
+        <string>Country\sCode&lt;\/td&gt;&lt;td&gt;&lt;img src=\".*?\salt=\"Flag\"\s\/&gt;(.*?)&lt;\/td&gt;</string>
+      </Regexes>
+      <Results>
+        <string>Blacklist Status</string>
+        <string>ISP</string>
+        <string>Country</string>
+      </Results>
+      <MultipleMatchRegex />
+      <LinkRegex />
+      <HttpMethod>POST</HttpMethod>
+      <HttpBody>ip=#DATA#</HttpBody>
+      <HttpHeaders>
+        <NameValue>
+          <Name>Content-Type</Name>
+          <Value>application/x-www-form-urlencoded</Value>
+        </NameValue>
+      </HttpHeaders>
+      <StripNewLines>false</StripNewLines>
+    </Input>
+    <Input>
+      <Name>ThreatExpert</Name>
+      <Enabled>true</Enabled>
+      <Url>http://www.threatexpert.com</Url>
+      <FullUrl>http://www.threatexpert.com/report.aspx?md5=#DATA#</FullUrl>
+      <DataTypes>
+        <string>MD5</string>
+      </DataTypes>
+      <Regexes>
+        <string>content=\"ThreatExpert Report:(.*?)\"&gt;</string>
+        <string>Submission received:(.*?)&lt;\/li&gt;</string>
+      </Regexes>
+      <Results>
+        <string>Threat</string>
+        <string>Submission Received</string>
+      </Results>
+      <MultipleMatchRegex />
+      <LinkRegex />
+      <HttpMethod>GET</HttpMethod>
+      <HttpBody />
+      <HttpHeaders />
+      <StripNewLines>false</StripNewLines>
+    </Input>
+    <Input>
+      <Name>VxVault</Name>
+      <Enabled>true</Enabled>
+      <Url>http://vxvault.net</Url>
+      <FullUrl>http://vxvault.net/ViriList.php?MD5=#DATA#</FullUrl>
+      <DataTypes>
+        <string>MD5</string>
+      </DataTypes>
+      <Regexes>
+        <string>ViriFiche\.php\?ID=\d*</string>
+      </Regexes>
+      <Results>
+        <string />
+      </Results>
+      <MultipleMatchRegex />
+      <LinkRegex />
+      <HttpMethod>GET</HttpMethod>
+      <HttpBody />
+      <HttpHeaders />
+      <StripNewLines>false</StripNewLines>
+    </Input>
+    <Input>
+      <Name>unshorten</Name>
+      <Enabled>true</Enabled>
+      <Url>https://unshorten.me</Url>
+      <FullUrl>https://unshorten.me/s/#DATA#</FullUrl>
+      <DataTypes>
+        <string>URL</string>
+      </DataTypes>
+      <Regexes>
+        <string>\b(http:\/\/.*|https:\/\/.*)</string>
+      </Regexes>
+      <Results>
+        <string>URL</string>
+      </Results>
+      <MultipleMatchRegex />
+      <LinkRegex />
+      <HttpMethod>GET</HttpMethod>
+      <HttpBody />
+      <HttpHeaders />
+      <StripNewLines>false</StripNewLines>
+    </Input>
+    <Input>
+      <Name>URL Void</Name>
+      <Enabled>true</Enabled>
+      <Url>http://www.urlvoid.com</Url>
+      <FullUrl>http://www.urlvoid.com/scan/#DATA#</FullUrl>
+      <DataTypes>
+        <string>URL</string>
+      </DataTypes>
+      <Regexes>
+        <string>Safety Reputation&lt;\/td&gt;&lt;td&gt;&lt;span\sclass=\"label\slabel-.*?"&gt;(\d+\/\d+)&lt;/span&gt;</string>
+        <string>Analysis\sDate&lt;\/td&gt;&lt;td&gt;(.*?)&lt;\/td&gt;</string>
+        <string>Server\sLocation&lt;\/td&gt;&lt;td&gt;&lt;img\ssrc=".*?"\salt="Flag"\s\/&gt;([\s\w]*)&lt;\/td&gt;</string>
+        <string>Domain\s1st\sRegistered&lt;\/td&gt;&lt;td&gt;(.*?)&lt;\/td&gt;</string>
+      </Regexes>
+      <Results>
+        <string>Blacklist Status</string>
+        <string>Analysis Date</string>
+        <string>Server Location</string>
+        <string>Domain 1st Registered</string>
+      </Results>
+      <MultipleMatchRegex />
+      <LinkRegex />
+      <HttpMethod>GET</HttpMethod>
+      <HttpBody />
+      <HttpHeaders />
+      <StripNewLines>true</StripNewLines>
+    </Input>
+    <Input>
+      <Name>malc0de</Name>
+      <Enabled>true</Enabled>
+      <Url>https://malc0de.com</Url>
+      <FullUrl>https://malc0de.com/database/index.php?search=#DATA#</FullUrl>
+      <DataTypes>
+        <string>IP</string>
+        <string>MD5</string>
+        <string>Domain</string>
+      </DataTypes>
+      <Regexes>
+        <string>www.virustotal.com/latest-scan/</string>
+      </Regexes>
+      <Results>
+        <string />
+      </Results>
+      <MultipleMatchRegex />
+      <LinkRegex />
+      <HttpMethod>GET</HttpMethod>
+      <HttpBody />
+      <HttpHeaders />
+      <StripNewLines>false</StripNewLines>
+    </Input>
+    <Input>
+      <Name>freegeoip.net</Name>
+      <Enabled>true</Enabled>
+      <Url>https://freegeoip.net</Url>
+      <FullUrl>https://freegeoip.net/json/#DATA#</FullUrl>
+      <DataTypes>
+        <string>IP</string>
+      </DataTypes>
+      <Regexes>
+        <string>"country_code":"(.*?)"</string>
+        <string>"country_name":"(.*?)"</string>
+        <string>"region_code":"(.*?)"</string>
+        <string>"region_name":"(.*?)"</string>
+        <string>"city":"(.*?)"</string>
+        <string>"zip_code":"(.*?)"</string>
+        <string>"time_zone":"(.*?)"</string>
+        <string>"latitude":"(.*?)"</string>
+        <string>"longitude":"(.*?)"</string>
+      </Regexes>
+      <Results>
+        <string>Country Code</string>
+        <string>Country Name</string>
+        <string>Region Code</string>
+        <string>Region Name</string>
+        <string>City</string>
+        <string>Post Code</string>
+        <string>Timezone</string>
+        <string>Latitude</string>
+        <string>Longitude</string>
+      </Results>
+      <MultipleMatchRegex />
+      <LinkRegex />
+      <HttpMethod>GET</HttpMethod>
+      <HttpBody />
+      <HttpHeaders />
+      <StripNewLines>false</StripNewLines>
+    </Input>
+    <Input>
+      <Name>SANS</Name>
+      <Enabled>true</Enabled>
+      <Url>https://isc.sans.edu/api/#ip</Url>
+      <FullUrl>https://isc.sans.edu/api/ip/#DATA#</FullUrl>
+      <DataTypes>
+        <string>IP</string>
+      </DataTypes>
+      <Regexes>
+        <string>&lt;count&gt;(\d+)&lt;\/count&gt;</string>
+        <string>&lt;attacks&gt;(\d+)&lt;\/attacks&gt;</string>
+      </Regexes>
+      <Results>
+        <string>Total Blocked Packets</string>
+        <string>Total Unique Dest IP's</string>
+      </Results>
+      <MultipleMatchRegex />
+      <LinkRegex />
+      <HttpMethod>GET</HttpMethod>
+      <HttpBody />
+      <HttpHeaders />
+      <StripNewLines>false</StripNewLines>
+    </Input>
+    <Input>
+      <Name>DNS</Name>
+      <Enabled>true</Enabled>
+      <Url>N/A</Url>
+      <FullUrl>N/A</FullUrl>
+      <DataTypes>
+        <string>IP</string>
+      </DataTypes>
+      <Regexes />
+      <Results />
+      <MultipleMatchRegex />
+      <LinkRegex />
+      <HttpMethod>GET</HttpMethod>
+      <HttpBody />
+      <HttpHeaders />
+      <StripNewLines>false</StripNewLines>
+    </Input>
+    <Input>
+      <Name>MalwareDomainList</Name>
+      <Enabled>true</Enabled>
+      <Url>https://www.malwaredomainlist.com</Url>
+      <FullUrl>https://www.malwaredomainlist.com/mdl.php?search=#DATA#&amp;colsearch=All&amp;quantity=50</FullUrl>
+      <DataTypes>
+        <string>IP</string>
+      </DataTypes>
+      <Regexes>
+        <string>&lt;td&gt;&lt;nobr&gt;(\d\d\d\d\/\d\d\/\d\d_\d\d:\d\d)&lt;\/nobr&gt;&lt;\/td&gt;&lt;td&gt;.*&lt;\/td&gt;&lt;td&gt;\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b&lt;\/td&gt;&lt;td&gt;.*?&lt;\/td&gt;&lt;td&gt;.*?&lt;\/td&gt;&lt;td&gt;.*?&lt;\/td&gt;</string>
+        <string>&lt;td&gt;&lt;nobr&gt;\d\d\d\d\/\d\d\/\d\d_\d\d:\d\d&lt;\/nobr&gt;&lt;\/td&gt;&lt;td&gt;.*&lt;\/td&gt;&lt;td&gt;\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b&lt;\/td&gt;&lt;td&gt;.*?&lt;\/td&gt;&lt;td&gt;(.*?)&lt;\/td&gt;&lt;td&gt;.*?&lt;\/td&gt;</string>
+      </Regexes>
+      <Results>
+        <string>Date</string>
+        <string>Malware</string>
+      </Results>
+      <MultipleMatchRegex />
+      <LinkRegex />
+      <HttpMethod>GET</HttpMethod>
+      <HttpBody />
+      <HttpHeaders />
+      <StripNewLines>false</StripNewLines>
+    </Input>
+    <Input>
+      <Name>www.bfk.de</Name>
+      <Enabled>true</Enabled>
+      <Url>http://www.bfk.de/bfk_dnslogger_en.html</Url>
+      <FullUrl>http://www.bfk.de/bfk_dnslogger_en.html?query=#DATA#</FullUrl>
+      <DataTypes>
+        <string>Domain</string>
+        <string>IP</string>
+      </DataTypes>
+      <Regexes />
+      <Results />
+      <MultipleMatchRegex>&lt;tr&gt;&lt;td&gt;&lt;tt&gt;&lt;a href.*?&gt;(?&lt;Domain&gt;.*?)&lt;\/a&gt;&lt;\/tt&gt;&lt;\/td&gt;&lt;td&gt;&lt;tt&gt;(?&lt;Type&gt;.*?)&lt;\/tt&gt;&lt;\/td&gt;&lt;td&gt;&lt;tt&gt;&lt;a href.*?&gt;(?&lt;IP&gt;.*?)&lt;\/a&gt;&lt;\/tt&gt;&lt;\/td&gt;&lt;\/tr&gt;</MultipleMatchRegex>
+      <LinkRegex />
+      <HttpMethod>GET</HttpMethod>
+      <HttpBody />
+      <HttpHeaders />
+      <StripNewLines>false</StripNewLines>
+    </Input>
+    <Input>
+      <Name>AlienVault</Name>
+      <Enabled>true</Enabled>
+      <Url>https://www.alienvault.com/open-threat-exchange/dashboard#/my/reputation-monitor</Url>
+      <FullUrl>https://www.alienvault.com/apps/api/threat/ip/#DATA#?format=json</FullUrl>
+      <DataTypes>
+        <string>IP</string>
+      </DataTypes>
+      <Regexes>
+        <string>"reputation_score":(\d),</string>
+        <string>"activity_types":\[(.*?)\],</string>
+        <string>"country_name":"(.*?)"},</string>
+        <string>"org_name":"(.*?)",</string>
+      </Regexes>
+      <Results>
+        <string>Reputation Score</string>
+        <string>Activity Types</string>
+        <string>Country Name</string>
+        <string>Org Name</string>
+      </Results>
+      <MultipleMatchRegex />
+      <LinkRegex />
+      <HttpMethod>GET</HttpMethod>
+      <HttpBody />
+      <HttpHeaders />
+      <StripNewLines>false</StripNewLines>
+    </Input>
+    <Input>
+      <Name>Reputation Authority</Name>
+      <Enabled>true</Enabled>
+      <Url>http://www.reputationauthority.org</Url>
+      <FullUrl>http://www.reputationauthority.org/lookup.php?ip=#DATA#&amp;ipvalid=&amp;Submit.x=10&amp;Submit.y=13&amp;Submit=Search</FullUrl>
+      <DataTypes>
+        <string>IP</string>
+      </DataTypes>
+      <Regexes>
+        <string>&gt;(\d{1,2}\/\d{1,3})</string>
+      </Regexes>
+      <Results>
+        <string>Reputation Score</string>
+      </Results>
+      <MultipleMatchRegex />
+      <LinkRegex />
+      <HttpMethod>GET</HttpMethod>
+      <HttpBody />
+      <HttpHeaders />
+      <StripNewLines>false</StripNewLines>
+    </Input>
+    <Input>
+      <Name>HpHosts</Name>
+      <Enabled>true</Enabled>
+      <Url>https://hosts-file.net</Url>
+      <FullUrl> https://hosts-file.net/?s=#DATA#</FullUrl>
+      <DataTypes>
+        <string>Domain</string>
+      </DataTypes>
+      <Regexes>
+        <string>This\ssite\sis\scurrently\slisted</string>
+      </Regexes>
+      <Results>
+        <string />
+      </Results>
+      <MultipleMatchRegex />
+      <LinkRegex />
+      <HttpMethod>GET</HttpMethod>
+      <HttpBody />
+      <HttpHeaders />
+      <StripNewLines>false</StripNewLines>
+    </Input>
+    <Input>
+      <Name>Google Safe Browsing</Name>
+      <Enabled>true</Enabled>
+      <Url>https://www.google.com/transparencyreport/safebrowsing/diagnostic/</Url>
+      <FullUrl>https://safebrowsing.googleapis.com/v4/threatMatches:find?key=#GSB_API_KEY#</FullUrl>
+      <DataTypes>
+        <string>IP</string>
+        <string>Domain</string>
+      </DataTypes>
+      <Regexes>
+        <string>"threatType": "(.*?)"</string>
+      </Regexes>
+      <Results>
+        <string>Threat Type</string>
+      </Results>
+      <MultipleMatchRegex />
+      <LinkRegex />
+      <HttpMethod>POST</HttpMethod>
+      <HttpBody>{
+    "client": {
+      "clientId":      "woanware",
+      "clientVersion": "1.0.0"
+    },
+    "threatInfo": {
+      "threatTypes":      ["THREAT_TYPE_UNSPECIFIED","MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
+      "platformTypes":    ["ANY_PLATFORM"],
+      "threatEntryTypes": ["URL"],
+      "threatEntries": [{"url": "#DATA#"}]
+    }}
+  </HttpBody>
+      <HttpHeaders>
+        <NameValue>
+          <Name>Content-Type</Name>
+          <Value>application/json</Value>
+        </NameValue>
+      </HttpHeaders>
+      <StripNewLines>false</StripNewLines>
+    </Input>
+  </Data>
+</Inputs>

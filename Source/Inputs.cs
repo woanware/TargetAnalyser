@@ -16,6 +16,7 @@ namespace TargetAnalyser
         #endregion
 
         #region Properties/Variables
+        public int Version { get; set; } = 1;
         public List<Input> Data { get; set; }  = new List<Input>();
         #endregion
 
@@ -41,6 +42,7 @@ namespace TargetAnalyser
                 using (FileStream stream = info.OpenRead())
                 {
                     Inputs i = (Inputs)serializer.Deserialize(stream);
+                    this.Version = i.Version;
                     this.Data = i.Data;             
                     return string.Empty;
                 }

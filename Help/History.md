@@ -2,6 +2,16 @@
 
 ## History ##
 
+**v1.0.0**
+
+- Rewrote entire processing engine to use a user configurable XML input file (Inputs.xml)
+- Can show HTTP response for easier regex debugging
+- Can show extended information from source response e.g. MultipleMatchRegex matches
+- Removed file input functionality
+- Removed console functionality
+- Processing is now parallised
+- Can reload the "Inputs.xml" and "ApiKeys.xml" config files whilst the application is loaded 
+
 **v0.0.10**
 
 - Modified so that the IP void checks display a generic not found message if the IP cannot be identified
