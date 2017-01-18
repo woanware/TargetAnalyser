@@ -29,7 +29,7 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -67,15 +67,8 @@
   </PropertyGroup>
   <PropertyGroup />
   <ItemGroup>
-    <Reference Include="CommandLine">
-      <HintPath>..\Dependencies\CommandLine\CommandLine.dll</HintPath>
-    </Reference>
     <Reference Include="CsvHelper">
       <HintPath>..\Dependencies\CsvHelper\CsvHelper.dll</HintPath>
-    </Reference>
-    <Reference Include="Dns, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Dns\Dns.dll</HintPath>
     </Reference>
     <Reference Include="ObjectListView">
       <HintPath>..\Dependencies\ObjectListView\ObjectListView.dll</HintPath>
@@ -90,9 +83,6 @@
     <Reference Include="System.Xml" />
     <Reference Include="Utility">
       <HintPath>..\Dependencies\woanware\Utility.dll</HintPath>
-    </Reference>
-    <Reference Include="VirusTotal.NET">
-      <HintPath>..\Dependencies\VirusTotal.NET\VirusTotal.NET.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -140,7 +130,6 @@
     <Compile Include="Input.cs" />
     <Compile Include="ApiKeys.cs" />
     <Compile Include="Inputs.cs" />
-    <Compile Include="Options.cs" />
     <Compile Include="Output.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

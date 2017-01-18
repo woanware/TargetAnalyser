@@ -67,6 +67,8 @@
             this.contextGoToUrl2 = new System.Windows.Forms.ToolStripMenuItem();
             this.contextSep1 = new System.Windows.Forms.ToolStripSeparator();
             this.contextCopyInfo = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripSeparator();
+            this.menuToolsUpdate = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.toolStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
@@ -148,7 +150,9 @@
             this.toolStripMenuItem2,
             this.menuToolsOptions,
             this.toolStripMenuItem3,
-            this.menuToolsReloadInputs});
+            this.menuToolsReloadInputs,
+            this.toolStripMenuItem5,
+            this.menuToolsUpdate});
             this.menuTools.Name = "menuTools";
             this.menuTools.Size = new System.Drawing.Size(65, 29);
             this.menuTools.Text = "Tools";
@@ -156,32 +160,32 @@
             // menuToolsProviders
             // 
             this.menuToolsProviders.Name = "menuToolsProviders";
-            this.menuToolsProviders.Size = new System.Drawing.Size(206, 30);
+            this.menuToolsProviders.Size = new System.Drawing.Size(281, 30);
             this.menuToolsProviders.Text = "Providers";
             this.menuToolsProviders.Click += new System.EventHandler(this.menuToolsProviders_Click);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(203, 6);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(278, 6);
             // 
             // menuToolsOptions
             // 
             this.menuToolsOptions.Name = "menuToolsOptions";
-            this.menuToolsOptions.Size = new System.Drawing.Size(206, 30);
+            this.menuToolsOptions.Size = new System.Drawing.Size(281, 30);
             this.menuToolsOptions.Text = "Options";
             this.menuToolsOptions.Click += new System.EventHandler(this.menuToolsOptions_Click);
             // 
             // toolStripMenuItem3
             // 
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-            this.toolStripMenuItem3.Size = new System.Drawing.Size(203, 6);
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(278, 6);
             // 
             // menuToolsReloadInputs
             // 
             this.menuToolsReloadInputs.Name = "menuToolsReloadInputs";
-            this.menuToolsReloadInputs.Size = new System.Drawing.Size(206, 30);
-            this.menuToolsReloadInputs.Text = "Reload Inputs";
+            this.menuToolsReloadInputs.Size = new System.Drawing.Size(281, 30);
+            this.menuToolsReloadInputs.Text = "Reload Inputs/API Keys";
             this.menuToolsReloadInputs.Click += new System.EventHandler(this.menuToolsReloadInputs_Click);
             // 
             // menuHelp
@@ -381,6 +385,18 @@
             this.contextCopyInfo.Text = "Copy Info";
             this.contextCopyInfo.Click += new System.EventHandler(this.contextCopyInfo_Click);
             // 
+            // toolStripMenuItem5
+            // 
+            this.toolStripMenuItem5.Name = "toolStripMenuItem5";
+            this.toolStripMenuItem5.Size = new System.Drawing.Size(278, 6);
+            // 
+            // menuToolsUpdate
+            // 
+            this.menuToolsUpdate.Name = "menuToolsUpdate";
+            this.menuToolsUpdate.Size = new System.Drawing.Size(281, 30);
+            this.menuToolsUpdate.Text = "Update Inputs";
+            this.menuToolsUpdate.Click += new System.EventHandler(this.menuToolsUpdate_Click);
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
@@ -453,6 +469,8 @@
         private System.Windows.Forms.ToolStripMenuItem contextExtended;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem4;
         private System.Windows.Forms.ToolStripMenuItem contextResponse;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem5;
+        private System.Windows.Forms.ToolStripMenuItem menuToolsUpdate;
     }
 }
 

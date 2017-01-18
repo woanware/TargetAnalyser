@@ -27,10 +27,18 @@ namespace TargetAnalyser
         /// <returns></returns>
         public string Load()
         {
+            return LoadFromFile(GetPath());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public string LoadFromFile(string path)
+        {
             try
             {
-                string path = GetPath();
-
                 if (File.Exists(path) == false)
                 {
                     return string.Empty;
@@ -43,7 +51,7 @@ namespace TargetAnalyser
                 {
                     Inputs i = (Inputs)serializer.Deserialize(stream);
                     this.Version = i.Version;
-                    this.Data = i.Data;             
+                    this.Data = i.Data;
                     return string.Empty;
                 }
             }
@@ -78,11 +86,6 @@ namespace TargetAnalyser
         {
             try
             {
-                //if (System.IO.Directory.Exists(Misc.GetUserDataDirectory()) == false)
-                //{
-                //    IO.CreateDirectory(Misc.GetUserDataDirectory());
-                //}
-
                 XmlSerializer serializer = new XmlSerializer(typeof(Inputs));
                 using (StreamWriter writer = new StreamWriter(GetPath(), false))
                 {

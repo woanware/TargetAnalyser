@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Linq;
 using woanware;
+using System.Net;
 
 namespace TargetAnalyser
 {
@@ -485,6 +486,69 @@ namespace TargetAnalyser
         private void menuToolsReloadInputs_Click(object sender, EventArgs e)
         {
             LoadInputs();
+            LoadApiKeys();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void menuToolsUpdate_Click(object sender, EventArgs e)
+        {                         
+            string tempFile = System.IO.Path.GetTempFileName();
+
+            try
+            {
+                WebClient wb = new WebClient();
+                wb.DownloadFile("https://raw.githubusercontent.com/woanware/TargetAnalyser/master/Inputs/Inputs.xml", tempFile);
+
+                if (System.IO.File.Exists(tempFile) == false)
+                {
+                    UserInterface.DisplayErrorMessageBox(this, "Error checking for updates");
+                    return;
+                }
+
+                Inputs i = new Inputs();
+                string ret = i.LoadFromFile(tempFile);
+                if (ret.Length > 0)
+                {
+                    UserInterface.DisplayErrorMessageBox(this, "Error loading the update: " + ret);
+                    return;
+                }
+
+                if (i.Version == this.inputs.Version)
+                {
+                    UserInterface.DisplayMessageBox(this, "No updates available", MessageBoxIcon.Information);
+                    return;
+                }
+
+                DialogResult dr = UserInterface.DisplayQuestionMessageBox(this, "Update available. Do you want to update? (Note that it will overwrite any local changes)");
+                if (dr == DialogResult.Yes)
+                {
+                    this.inputs.LoadFromFile(tempFile);
+                }
+            }
+            catch (WebException webEx)
+            {
+                if (webEx.InnerException == null)
+                {
+                    UserInterface.DisplayErrorMessageBox(this, "Error checking for updates: " + webEx.Message);
+                }
+                else
+                {
+                    UserInterface.DisplayErrorMessageBox(this, "Error checking for updates: " + webEx.InnerException.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                UserInterface.DisplayErrorMessageBox(this, "Error checking for updates: " + ex.Message);
+            }
+            finally
+            {
+                IO.DeleteFile(tempFile);
+            }
+            
         }
         #endregion
 
