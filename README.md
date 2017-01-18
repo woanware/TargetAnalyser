@@ -18,6 +18,7 @@ The inputs use regular expressions to extract information from a HTTP response. 
 - File input data supported
 - Trivially open the web page for the data
 - Can show the HTTP response to fix regular expression issues
+- Has 20 defined input sources (as of v1.0.0 release)
 
 ## Third party libraries ##
 
@@ -34,7 +35,8 @@ The inputs use regular expressions to extract information from a HTTP response. 
 
 ## Requirements ##
 
-Microsoft .NET Framework v4.5 
+- Microsoft .NET Framework v4.6.1
+- Windows x64
 
 ## Screenshots
 

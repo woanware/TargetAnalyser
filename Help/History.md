@@ -9,8 +9,12 @@
 - Can show extended information from source response e.g. MultipleMatchRegex matches
 - Removed file input functionality
 - Removed console functionality
-- Processing is now parallised
+- Processing is now parallelised
 - Can reload the "Inputs.xml" and "ApiKeys.xml" config files whilst the application is loaded 
+- Removed old dependencies
+- Made compatible with .Net v4.6.1
+- Made x64 only
+- Added update from web functionality
 
 **v0.0.10**
 
