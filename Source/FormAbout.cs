@@ -1,11 +1,7 @@
 ﻿using System.Windows.Forms;
-using System.Drawing;
 
 namespace TargetAnalyser
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public partial class FormAbout : Form
     {
         #region Constructor
@@ -41,12 +37,25 @@ namespace TargetAnalyser
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void linkWeb_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        private void linkWeb_LinkClicked(object sender, System.EventArgs e)
         {
-
             System.Diagnostics.Process process = new System.Diagnostics.Process();
             process.StartInfo.RedirectStandardOutput = false;
-            process.StartInfo.FileName = "https://" + linkWeb.Text;
+            process.StartInfo.FileName = "http://" + linkWeb.Text;
+            process.StartInfo.UseShellExecute = true;
+            process.Start();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void linkIcons8_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process process = new System.Diagnostics.Process();
+            process.StartInfo.RedirectStandardOutput = false;
+            process.StartInfo.FileName = "https://" + linkIcons8.Text;
             process.StartInfo.UseShellExecute = true;
             process.Start();
         }
@@ -63,7 +72,5 @@ namespace TargetAnalyser
             this.DialogResult = DialogResult.OK;
         }
         #endregion
-
-        
     }
 }
