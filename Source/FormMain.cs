@@ -527,6 +527,10 @@ namespace TargetAnalyser
                 if (dr == DialogResult.Yes)
                 {
                     this.inputs.LoadFromFile(tempFile);
+                    if (this._analyser != null)
+                    {
+                        this._analyser.Inputs = this.inputs;
+                    }
                 }
             }
             catch (WebException webEx)
