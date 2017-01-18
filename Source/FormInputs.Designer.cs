@@ -43,10 +43,12 @@
             this.listProviders.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.listProviders.CellEditUseWholeCell = false;
             this.listProviders.CheckBoxes = true;
             this.listProviders.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.olvcInput,
             this.olvcDataTypes});
+            this.listProviders.Cursor = System.Windows.Forms.Cursors.Default;
             this.listProviders.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
             this.listProviders.FullRowSelect = true;
             this.listProviders.HideSelection = false;
@@ -63,13 +65,11 @@
             // olvcInput
             // 
             this.olvcInput.AspectName = "Name";
-            this.olvcInput.CellPadding = null;
             this.olvcInput.Text = "Input";
             this.olvcInput.Width = 133;
             // 
             // olvcDataTypes
             // 
-            this.olvcDataTypes.CellPadding = null;
             this.olvcDataTypes.Text = "Data Types";
             // 
             // btnClose
@@ -88,8 +88,7 @@
             // 
             // FormInputs
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.CancelButton = this.btnClose;
             this.ClientSize = new System.Drawing.Size(421, 470);
             this.Controls.Add(this.btnClose);

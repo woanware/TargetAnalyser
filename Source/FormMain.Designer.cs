@@ -44,6 +44,8 @@
             this.menuToolsOptions = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
             this.menuToolsReloadInputs = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripSeparator();
+            this.menuToolsUpdate = new System.Windows.Forms.ToolStripMenuItem();
             this.menuHelp = new System.Windows.Forms.ToolStripMenuItem();
             this.menuHelpAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip = new System.Windows.Forms.ToolStrip();
@@ -67,8 +69,6 @@
             this.contextGoToUrl2 = new System.Windows.Forms.ToolStripMenuItem();
             this.contextSep1 = new System.Windows.Forms.ToolStripSeparator();
             this.contextCopyInfo = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripSeparator();
-            this.menuToolsUpdate = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.toolStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
@@ -107,7 +107,7 @@
             this.menuFileExportJson,
             this.menuFileExportXml});
             this.menuFileExport.Name = "menuFileExport";
-            this.menuFileExport.Size = new System.Drawing.Size(148, 30);
+            this.menuFileExport.Size = new System.Drawing.Size(211, 30);
             this.menuFileExport.Text = "Export";
             // 
             // menuFileExportCsv
@@ -134,12 +134,12 @@
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(145, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(208, 6);
             // 
             // menuFileExit
             // 
             this.menuFileExit.Name = "menuFileExit";
-            this.menuFileExit.Size = new System.Drawing.Size(148, 30);
+            this.menuFileExit.Size = new System.Drawing.Size(211, 30);
             this.menuFileExit.Text = "Exit";
             this.menuFileExit.Click += new System.EventHandler(this.menuFileExit_Click);
             // 
@@ -161,7 +161,7 @@
             // 
             this.menuToolsProviders.Name = "menuToolsProviders";
             this.menuToolsProviders.Size = new System.Drawing.Size(281, 30);
-            this.menuToolsProviders.Text = "Providers";
+            this.menuToolsProviders.Text = "Inputs";
             this.menuToolsProviders.Click += new System.EventHandler(this.menuToolsProviders_Click);
             // 
             // toolStripMenuItem2
@@ -187,6 +187,18 @@
             this.menuToolsReloadInputs.Size = new System.Drawing.Size(281, 30);
             this.menuToolsReloadInputs.Text = "Reload Inputs/API Keys";
             this.menuToolsReloadInputs.Click += new System.EventHandler(this.menuToolsReloadInputs_Click);
+            // 
+            // toolStripMenuItem5
+            // 
+            this.toolStripMenuItem5.Name = "toolStripMenuItem5";
+            this.toolStripMenuItem5.Size = new System.Drawing.Size(278, 6);
+            // 
+            // menuToolsUpdate
+            // 
+            this.menuToolsUpdate.Name = "menuToolsUpdate";
+            this.menuToolsUpdate.Size = new System.Drawing.Size(281, 30);
+            this.menuToolsUpdate.Text = "Update Inputs";
+            this.menuToolsUpdate.Click += new System.EventHandler(this.menuToolsUpdate_Click);
             // 
             // menuHelp
             // 
@@ -272,6 +284,7 @@
             this.listResults.AllColumns.Add(this.olvcHasExtended);
             this.listResults.AllColumns.Add(this.olvcUrl1);
             this.listResults.AllColumns.Add(this.olvUrl2);
+            this.listResults.CellEditUseWholeCell = false;
             this.listResults.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.olvcSource,
             this.olvcResult,
@@ -279,6 +292,7 @@
             this.olvcUrl1,
             this.olvUrl2});
             this.listResults.ContextMenuStrip = this.context;
+            this.listResults.Cursor = System.Windows.Forms.Cursors.Default;
             this.listResults.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listResults.FullRowSelect = true;
             this.listResults.HideSelection = false;
@@ -295,33 +309,28 @@
             // olvcSource
             // 
             this.olvcSource.AspectName = "Source";
-            this.olvcSource.CellPadding = null;
             this.olvcSource.Text = "Source";
             // 
             // olvcResult
             // 
             this.olvcResult.AspectName = "Info";
-            this.olvcResult.CellPadding = null;
             this.olvcResult.Text = "Info";
             // 
             // olvcHasExtended
             // 
             this.olvcHasExtended.AspectName = "HasExtended";
-            this.olvcHasExtended.CellPadding = null;
             this.olvcHasExtended.Text = "Has Extended";
             this.olvcHasExtended.Width = 132;
             // 
             // olvcUrl1
             // 
             this.olvcUrl1.AspectName = "Url";
-            this.olvcUrl1.CellPadding = null;
             this.olvcUrl1.Text = "URL 1";
             this.olvcUrl1.Width = 101;
             // 
             // olvUrl2
             // 
             this.olvUrl2.AspectName = "FullUrl";
-            this.olvUrl2.CellPadding = null;
             this.olvUrl2.Text = "URL 2";
             // 
             // context
@@ -384,18 +393,6 @@
             this.contextCopyInfo.Size = new System.Drawing.Size(269, 30);
             this.contextCopyInfo.Text = "Copy Info";
             this.contextCopyInfo.Click += new System.EventHandler(this.contextCopyInfo_Click);
-            // 
-            // toolStripMenuItem5
-            // 
-            this.toolStripMenuItem5.Name = "toolStripMenuItem5";
-            this.toolStripMenuItem5.Size = new System.Drawing.Size(278, 6);
-            // 
-            // menuToolsUpdate
-            // 
-            this.menuToolsUpdate.Name = "menuToolsUpdate";
-            this.menuToolsUpdate.Size = new System.Drawing.Size(281, 30);
-            this.menuToolsUpdate.Text = "Update Inputs";
-            this.menuToolsUpdate.Click += new System.EventHandler(this.menuToolsUpdate_Click);
             // 
             // FormMain
             // 
